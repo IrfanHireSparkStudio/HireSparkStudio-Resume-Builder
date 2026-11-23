@@ -1,1138 +1,1297 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="color-scheme" content="light dark" />
-    <link rel="icon" href="data:," />
-    <title>Voice Dictation</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Noto+Nastaliq+Urdu:wght@400;600&display=swap" rel="stylesheet" />
-    <style>
-      button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) { min-height: 2.75rem; }
-      * { box-sizing: border-box; }
-      :root {
-        --bg: #f2f4f1;
-        --surface: #ffffff;
-        --surface-2: #eef2ee;
-        --ink: #182420;
-        --muted: #5c6a63;
-        --line: #d9dfd9;
-        --accent: #0c7a5c;
-        --accent-dark: #095c45;
-        --accent-ink: #ffffff;
-        --rec: #d92d20;
-        --rec-soft: #fdecea;
-        --warn-bg: #fdf3e3;
-        --warn-ink: #7a5410;
-        --warn-line: #ecd9ae;
-        --shadow: 0 10px 30px rgba(20, 40, 32, .08);
-      }
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --bg: #0f1311;
-          --surface: #171c1a;
-          --surface-2: #1f2623;
-          --ink: #ecf2ee;
-          --muted: #9db0a6;
-          --line: #2b3530;
-          --accent: #2fbf9a;
-          --accent-dark: #2fbf9a;
-          --accent-ink: #06231a;
-          --rec: #ff6f61;
-          --rec-soft: #3a1f1c;
-          --warn-bg: #33270f;
-          --warn-ink: #f2cf8a;
-          --warn-line: #57451c;
-          --shadow: 0 10px 30px rgba(0,0,0,.35);
-        }
-      }
-      html { -webkit-text-size-adjust: 100%; }
-      body {
-        margin: 0;
-        background: var(--bg);
-        color: var(--ink);
-        font-family: "Sora", system-ui, -apple-system, "Segoe UI", sans-serif;
-        line-height: 1.55;
-      }
-      .wrap { max-width: 920px; margin: 0 auto; padding: 20px 18px 40px; }
-      /* Brand bar */
-      .brandbar { display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; padding:6px 0 16px; border-bottom:1px solid var(--line); margin-bottom:20px; }
-      .brand { display:flex; align-items:center; gap:12px; text-decoration:none; color:var(--ink); }
-      .logo { width:48px; height:48px; border-radius:12px; background:var(--accent); color:#fff; display:grid; place-items:center; font-weight:800; font-size:19px; letter-spacing:-.02em; flex:0 0 auto; box-shadow:0 6px 16px rgba(12,122,92,.3); }
-      @media (prefers-color-scheme: dark){ .logo{ color:#06231a; } }
-      .brand-name { font-weight:800; font-size:19px; line-height:1.1; letter-spacing:-.01em; }
-      .brand-tag { font-size:12.5px; color:var(--muted); line-height:1.3; margin-top:2px; }
-      .mainnav { display:flex; gap:8px; flex-wrap:wrap; }
-      .navbtn { font:inherit; font-size:14px; font-weight:700; padding:8px 14px; border-radius:999px; border:1.5px solid var(--line); background:var(--surface); color:var(--ink); cursor:pointer; min-height:2.75rem; }
-      .navbtn.active, .navbtn.primary-nav { background:var(--accent); color:var(--accent-ink); border-color:var(--accent); }
-      .services-strip { display:flex; flex-wrap:wrap; gap:8px; margin:-6px 0 18px; }
-      .services-strip span { font-size:13px; font-weight:600; background:var(--surface); border:1px solid var(--line); padding:6px 10px; border-radius:999px; color:var(--muted); }
-      .services-strip span b{ color:var(--ink); }
-      header.top { margin-bottom: 22px; }
-      h1 { font-size: clamp(30px, 5.4vw, 44px); font-weight: 800; letter-spacing: -.02em; margin: 0 0 6px; }
-      .sub { color: var(--muted); font-size: 16px; margin: 0; max-width: 60ch; }
-      .sub .ru { color: var(--ink); font-weight: 600; }
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<link rel="icon" href="data:," />
+<title>Nurse Resume Builder — HireSparkStudio</title>
+<!--
+  Nurse Resume Builder — a single-file web app for HireSparkStudio buyers.
+  Everything (CSS + JS) is inline so the file works offline when opened in a browser.
+  The ONLY external dependency is the `docx` library (CDN) used for Word (.docx) export;
+  if it cannot load (buyer offline), the app shows a clear message and PDF still works.
+-->
+<script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
+<style>
+  /* ============ Builder UI palette (document preview stays white paper) ============ */
+  :root{
+    --navy:#1F3864;
+    --navy-soft:#2E5395;
+    --bg:#EEF1F6;
+    --surface:#FFFFFF;
+    --surface-2:#F6F8FB;
+    --ink:#1B2432;
+    --muted:#5A6B84;
+    --line:#D5DCE8;
+    --accent:#1F3864;
+    --accent-ink:#FFFFFF;
+    --danger:#B3261E;
+    --ok:#1E7A46;
+    --radius:10px;
+    color-scheme:light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0F1520;
+      --surface:#182233;
+      --surface-2:#1E2A40;
+      --ink:#E8EDF5;
+      --muted:#9DB0CC;
+      --line:#33445F;
+      --accent:#8FB0E8;
+      --accent-ink:#0F1B31;
+      color-scheme:dark;
+    }
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
+    font-size:15px;line-height:1.5;
+  }
+  button,[role="button"],select,input,textarea{font:inherit}
+  button,select,input:not([type="checkbox"]){min-height:40px}
+  textarea{min-height:44px}
+  :focus-visible{outline:2px solid var(--navy-soft);outline-offset:2px}
 
-      .panel {
-        background: var(--surface);
-        border: 1px solid var(--line);
-        border-radius: 18px;
-        box-shadow: var(--shadow);
-        padding: 20px;
-        margin-bottom: 18px;
-      }
-      .recorder { display: flex; flex-direction: column; gap: 18px; }
-      .rec-top { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
-      .mic-zone { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 0 0 auto; }
-      .mic-btn {
-        width: 104px; height: 104px; border-radius: 50%;
-        border: none; cursor: pointer; position: relative;
-        background: var(--accent); color: var(--accent-ink);
-        display: grid; place-items: center;
-        transition: background .2s ease, transform .15s ease;
-        box-shadow: 0 8px 22px rgba(12, 122, 92, .35);
-      }
-      .mic-btn:active { transform: scale(.97); }
-      .mic-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
-      .mic-btn svg { width: 44px; height: 44px; }
-      .mic-btn.recording { background: var(--rec); box-shadow: 0 8px 22px rgba(217, 45, 32, .35); }
-      .mic-btn.recording::after {
-        content: ""; position: absolute; inset: -10px; border-radius: 50%;
-        border: 2px solid var(--rec); opacity: .55;
-        animation: pulse 1.6s ease-out infinite;
-      }
-      @keyframes pulse {
-        0% { transform: scale(.92); opacity: .6; }
-        100% { transform: scale(1.18); opacity: 0; }
-      }
-      @media (prefers-reduced-motion: reduce) {
-        .mic-btn.recording::after { animation: none; opacity: 0; }
-      }
-      .mic-label { font-weight: 700; font-size: 15px; }
-      .timer { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 14px; min-height: 21px; }
-      .rec-main { flex: 1 1 280px; min-width: 240px; display: flex; flex-direction: column; gap: 12px; }
-      #wave { width: 100%; height: 64px; display: block; background: var(--surface-2); border-radius: 12px; }
-      .status { font-size: 15px; min-height: 24px; }
-      .status .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--muted); margin-right: 8px; vertical-align: 1px; }
-      .status.live .dot { background: var(--rec); }
-      .status.err { color: var(--rec); font-weight: 600; }
-      .live-strip {
-        background: var(--surface-2); border: 1px dashed var(--line);
-        border-radius: 12px; padding: 12px 14px; min-height: 52px;
-        font-size: 16px; color: var(--muted);
-      }
-      .live-strip .hearing { color: var(--ink); }
-      .live-strip .lbl { display: block; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .wrap{max-width:1060px;margin:0 auto;padding:14px 14px 40px}
+  .app-head{padding:10px 2px 4px}
+  .app-head h1{font-size:22px;margin:0 0 2px;color:var(--navy)}
+  @media (prefers-color-scheme: dark){.app-head h1{color:var(--ink)}}
+  .app-head p{margin:0;color:var(--muted);font-size:13.5px}
 
-      .controls { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: end; }
-      .field { display: flex; flex-direction: column; gap: 6px; }
-      .field label { font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
-      select {
-        font: inherit; font-size: 16px; color: var(--ink);
-        background: var(--surface); border: 1.5px solid var(--line);
-        border-radius: 10px; padding: 8px 36px 8px 12px; cursor: pointer;
-      }
-      .toggles { display: flex; flex-wrap: wrap; gap: 10px; }
-      .toggle {
-        display: inline-flex; align-items: center; gap: 9px;
-        font: inherit; font-size: 14px; font-weight: 600;
-        background: var(--surface); color: var(--ink);
-        border: 1.5px solid var(--line); border-radius: 999px;
-        padding: 6px 14px 6px 8px; cursor: pointer; min-height: 2.75rem;
-      }
-      .toggle .sw { width: 36px; height: 20px; border-radius: 999px; background: var(--line); position: relative; flex: 0 0 auto; transition: background .15s ease; }
-      .toggle .sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.3); transition: left .15s ease; }
-      .toggle[aria-pressed="true"] .sw { background: var(--accent); }
-      .toggle[aria-pressed="true"] .sw::after { left: 18px; }
+  /* ============ Tabs ============ */
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 16px;position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:20}
+  .tab-btn{
+    flex:1 1 auto;min-width:80px;padding:10px 8px;border:1px solid var(--line);
+    background:var(--surface);color:var(--ink);border-radius:var(--radius);
+    font-weight:600;cursor:pointer;min-height:44px;
+  }
+  .tab-btn[aria-selected="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}
+  @media (prefers-color-scheme: dark){
+    .tab-btn[aria-selected="true"]{background:var(--navy-soft);border-color:var(--navy-soft)}
+  }
 
-      .notice {
-        background: var(--warn-bg); color: var(--warn-ink);
-        border: 1px solid var(--warn-line); border-radius: 12px;
-        padding: 12px 14px; font-size: 14.5px;
-      }
-      .notice[hidden] { display: none; }
+  /* ============ Cards, forms, buttons ============ */
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin:0 0 14px}
+  .card h2{font-size:16px;margin:0 0 10px}
+  .card h3{font-size:14px;margin:14px 0 6px}
+  .hint{color:var(--muted);font-size:13px;margin:4px 0 10px}
+  .grid{display:grid;grid-template-columns:1fr;gap:10px}
+  @media (min-width:640px){.grid{grid-template-columns:1fr 1fr}.grid .full{grid-column:1/-1}}
+  label{display:block;font-size:13px;font-weight:600;margin:0 0 4px}
+  input[type="text"],input[type="email"],input[type="tel"],input[type="date"],textarea,select{
+    width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;
+    background:var(--surface);color:var(--ink);
+  }
+  textarea{resize:vertical}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    padding:9px 14px;border-radius:8px;border:1px solid var(--navy);
+    background:var(--navy);color:#fff;font-weight:600;cursor:pointer;min-height:42px;text-decoration:none;
+  }
+  .btn.secondary{background:var(--surface);color:var(--navy);border-color:var(--line)}
+  @media (prefers-color-scheme: dark){.btn.secondary{color:var(--ink)}}
+  .btn.small{min-height:36px;padding:6px 10px;font-size:13px}
+  .btn.danger{background:var(--surface);color:var(--danger);border-color:var(--line)}
+  .btn:disabled{opacity:.55;cursor:not-allowed}
+  .btn-row{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+  .icon-btn{
+    min-width:40px;min-height:40px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;
+    background:var(--surface-2);color:var(--ink);cursor:pointer;font-size:14px;line-height:1;
+  }
+  .icon-btn[aria-pressed="false"]{opacity:.55}
+  .msg{display:none;border-radius:8px;padding:10px 12px;margin:10px 0;font-size:14px}
+  .msg.show{display:block}
+  .msg.warn{background:#FDF3E3;color:#7A4A00;border:1px solid #EBCB8B}
+  .msg.ok{background:#E9F6EE;color:var(--ok);border:1px solid #BFE3CC}
+  @media (prefers-color-scheme: dark){
+    .msg.warn{background:#3A2E12;color:#F2CE84;border-color:#6B5518}
+    .msg.ok{background:#123324;color:#8FE0AE;border-color:#1E5C3A}
+  }
 
-      .editor-head { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-      .editor-head h2 { font-size: 19px; margin: 0; font-weight: 700; }
-      .counts { color: var(--muted); font-size: 13.5px; font-variant-numeric: tabular-nums; }
-      textarea {
-        width: 100%; min-height: 280px; resize: vertical;
-        font: inherit; font-size: 17px; line-height: 1.7;
-        color: var(--ink); background: var(--surface);
-        border: 1.5px solid var(--line); border-radius: 12px;
-        padding: 14px 16px;
-      }
-      textarea:focus { outline: 3px solid var(--accent); outline-offset: 1px; border-color: transparent; }
-      textarea.urdu { font-family: "Noto Nastaliq Urdu", "Sora", serif; line-height: 2.3; font-size: 18px; }
-      .live-strip.urdu { font-family: "Noto Nastaliq Urdu", serif; line-height: 2.2; }
+  /* ============ Section editor ============ */
+  .sec-card{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);margin:0 0 12px;overflow:hidden}
+  .sec-head{display:flex;align-items:center;gap:6px;background:var(--surface-2);padding:8px 10px;flex-wrap:wrap}
+  .sec-head .sec-title{flex:1 1 140px;font-weight:700;font-size:14px}
+  .sec-head input.sec-title-input{flex:1 1 140px;font-weight:700}
+  .sec-body{padding:12px}
+  .sec-body.is-hidden{display:none}
+  .entry-box{border:1px dashed var(--line);border-radius:8px;padding:10px;margin:0 0 10px}
+  .entry-box .entry-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+  .entry-box .entry-top span{font-weight:700;font-size:13px;color:var(--muted)}
+  .bullet-row{display:flex;gap:6px;margin:0 0 6px;align-items:flex-start}
+  .bullet-row textarea{flex:1}
+  .bullet-row .icon-btn{flex:0 0 auto}
+  .chip-row{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{
+    border:1px solid var(--navy);color:var(--navy);background:var(--surface);
+    border-radius:999px;padding:8px 12px;cursor:pointer;font-weight:600;font-size:13.5px;min-height:40px;
+  }
+  @media (prefers-color-scheme: dark){.chip{color:var(--ink)}}
 
-      .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
-      .btn {
-        font: inherit; font-size: 15px; font-weight: 600;
-        border-radius: 10px; padding: 9px 16px; cursor: pointer;
-        display: inline-flex; align-items: center; gap: 8px;
-        border: 1.5px solid var(--line); background: var(--surface); color: var(--ink);
-        transition: border-color .15s ease, background .15s ease;
-      }
-      .btn svg { width: 17px; height: 17px; flex: 0 0 auto; }
-      .btn:hover { border-color: var(--accent); }
-      .btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-      .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-      .btn.primary:hover { background: var(--accent-dark); }
-      .btn.danger:hover { border-color: var(--rec); color: var(--rec); }
-      .btn.copied { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  /* ============ Document preview (matches the Jane Carter Word layout) ============ */
+  .preview-scroll{overflow-x:auto;padding:4px 0 8px}
+  .paper{
+    background:#fff;color:#1A1A1A;width:816px;max-width:100%;margin:0 auto;
+    padding:46px 52px 52px;box-shadow:0 2px 14px rgba(20,35,70,.18);
+    font-family:Calibri,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+    font-size:13.5px;line-height:1.45;
+  }
+  @media (max-width:560px){.paper{padding:28px 20px 34px}}
+  .paper .p-name{
+    text-align:center;font-size:29px;font-weight:700;color:#1F3864;
+    letter-spacing:.4px;margin:0;line-height:1.15;text-transform:uppercase;
+  }
+  .paper .p-title{
+    text-align:center;font-size:12.5px;font-weight:700;color:#1F3864;
+    letter-spacing:1.1px;margin:5px 0 0;text-transform:uppercase;
+  }
+  .paper .p-contact{text-align:center;font-size:11.5px;color:#333;margin:5px 0 0}
+  .paper h2.p-sec{
+    font-size:14px;font-weight:700;color:#1F3864;text-transform:uppercase;letter-spacing:.5px;
+    border-bottom:1.5px solid #1F3864;padding-bottom:3px;margin:17px 0 8px;
+  }
+  .paper p{margin:0 0 6px}
+  .paper .p-entry{margin:0 0 10px}
+  .paper .p-entry-head{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+  .paper .p-entry-title{font-weight:700}
+  .paper .p-entry-right{font-style:italic;font-size:12.5px;white-space:nowrap;color:#333}
+  .paper .p-line{font-size:12.8px}
+  .paper .p-line2{font-size:12.8px;font-style:italic;color:#333}
+  .paper ul{margin:3px 0 6px;padding-left:19px}
+  .paper li{margin:0 0 3px}
+  .paper .p-letter p{margin:0 0 12px}
+  .paper .p-ref{margin:0 0 14px}
+  .paper .p-ref .p-ref-name{font-weight:700;color:#1F3864;font-size:14px}
 
-      .cleanup { margin-top: 20px; border-top: 1px solid var(--line); padding-top: 16px; }
-      .cleanup h3 { margin: 0 0 4px; font-size: 15px; font-weight: 700; }
-      .cleanup p { margin: 0 0 12px; color: var(--muted); font-size: 14px; }
-      .cleanup .row { display: flex; flex-wrap: wrap; gap: 10px; }
+  /* ============ Jobs ============ */
+  .job-board-cta{
+    display:block;text-align:center;background:var(--navy);color:#fff;border-radius:var(--radius);
+    padding:16px 14px;font-weight:700;font-size:16px;text-decoration:none;margin:0 0 14px;
+  }
+  .portal-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  @media (min-width:640px){.portal-grid{grid-template-columns:1fr 1fr 1fr}}
+  .portal{
+    display:flex;align-items:center;justify-content:center;text-align:center;min-height:48px;
+    border:1px solid var(--line);border-radius:8px;background:var(--surface-2);
+    color:var(--ink);font-weight:600;text-decoration:none;padding:10px 8px;
+  }
+  .job-feed-item{border-bottom:1px solid var(--line);padding:10px 2px}
+  .job-feed-item:last-child{border-bottom:none}
+  .job-feed-item a{color:var(--navy-soft);font-weight:600;text-decoration:none}
+  .job-feed-item a:hover{text-decoration:underline}
 
-      .tips h2 { font-size: 19px; margin: 0 0 12px; }
-      .tips ol { margin: 0; padding-left: 22px; display: grid; gap: 10px; font-size: 15px; }
-      .tips li::marker { font-weight: 800; color: var(--accent); }
-      .tips .small { color: var(--muted); font-size: 13.5px; margin-top: 14px; }
-      kbd {
-        font-family: inherit; font-size: 12.5px; font-weight: 700;
-        background: var(--surface-2); border: 1px solid var(--line);
-        border-bottom-width: 2px; border-radius: 6px; padding: 1px 6px;
-      }
-      /* Punctuation help */
-      .punct-help { display:flex; flex-wrap:wrap; gap:8px; align-items:center; background:#e9f6f1; border:1px solid #bfe6d6; border-radius:12px; padding:10px 12px; font-size:13.5px; }
-      @media (prefers-color-scheme: dark){ .punct-help{ background:#123528; border-color:#1e4d3a; } }
-      .punct-help b{ white-space:nowrap; }
-      .punct-help code{ background:var(--surface); border:1px solid var(--line); padding:2px 7px; border-radius:999px; font-size:12.5px; font-family:inherit; font-weight:700; }
-      /* Contact + footer */
-      .contact-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
-      @media (max-width:640px){ .contact-grid{ grid-template-columns:1fr; } }
-      .contact-grid h2{ margin:0 0 8px; font-size:22px; }
-      .contact-grid h3{ margin:0 0 8px; font-size:15px; }
-      .service-list{ margin:0; padding-left:18px; display:grid; gap:6px; font-size:15px; }
-      .phone-big{ font-size:22px; font-weight:800; letter-spacing:.02em; text-decoration:none; color:var(--accent-dark); display:inline-block; margin:6px 0; }
-      .contact-actions{ display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; }
-      .btn.whatsapp{ background:#128c4a; border-color:#128c4a; color:#fff; }
-      footer.sitefoot{ margin-top:8px; padding:18px 4px 8px; border-top:1px solid var(--line); display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; color:var(--muted); font-size:13.5px; }
-      footer.sitefoot strong{ color:var(--ink); }
-      /* Login */
-      .login-wrap{ max-width:440px; margin:10px auto 30px; }
-      .login-wrap h2{ font-size:26px; margin:0 0 6px; }
-      .login-wrap p{ color:var(--muted); margin:0 0 16px; }
-      .login-form{ display:grid; gap:14px; }
-      .login-form label{ font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); display:block; margin-bottom:6px; }
-      .login-form input{ width:100%; font:inherit; font-size:16px; padding:11px 12px; border:1.5px solid var(--line); border-radius:10px; background:var(--surface); color:var(--ink); }
-      .login-msg{ font-size:14px; padding:11px 12px; border-radius:10px; background:var(--warn-bg); color:var(--warn-ink); border:1px solid var(--warn-line); }
-      .login-msg[hidden]{ display:none; }
-      .textlink{ background:none; border:none; font:inherit; font-weight:700; color:var(--accent-dark); cursor:pointer; text-decoration:underline; padding:6px; min-height:auto; }
-      @media (max-width: 560px) {
-        .panel { padding: 16px; }
-        .rec-top { flex-direction: column; align-items: stretch; }
-        .mic-zone { align-items: center; }
-        textarea { min-height: 230px; }
-        .brandbar{ align-items:flex-start; }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="wrap">
-      <!-- HireSparkStudio brand bar -->
-      <div class="brandbar">
-        <a class="brand" href="#" id="brandHome" aria-label="HireSparkStudio — Voice Dictation home">
-          <span class="logo" aria-hidden="true">HS</span>
-          <span>
-            <span class="brand-name">HireSparkStudio</span>
-            <span class="brand-tag" style="display:block">Dictate your ideas into typing</span>
-          </span>
-        </a>
-        <nav class="mainnav" aria-label="Main">
-          <button type="button" class="navbtn active" id="navDictation">Dictation</button>
-          <button type="button" class="navbtn" id="navContact">Contact</button>
-          <button type="button" class="navbtn primary-nav" id="navLogin">Login</button>
-        </nav>
+  footer.app-foot{text-align:center;color:var(--muted);font-size:12.5px;padding:18px 0 6px}
+  .tab-panel{display:none}
+  .tab-panel.active{display:block}
+
+  /* ============ Print: ONLY the visible preview, US Letter, one page + watermark ============ */
+  @page{size:Letter;margin:.6in}
+  @media print{
+    body{background:#fff}
+    .no-print{display:none !important}
+    .wrap{max-width:none;padding:0}
+    .tab-panel{display:none !important}
+    .tab-panel.active{display:block !important}
+    .preview-scroll{overflow:visible;padding:0}
+    .paper{box-shadow:none;width:auto;max-width:none;padding:0;margin:0;position:relative}
+    /* Centred "HireSparkStudio" watermark — print/PDF downloads only, never on screen. */
+    .paper::after{
+      content:"HireSparkStudio";
+      position:absolute;left:50%;top:50%;
+      transform:translate(-50%,-50%) rotate(-30deg);
+      font-family:Georgia,"Times New Roman",serif;
+      font-size:46pt;font-weight:700;letter-spacing:1px;white-space:nowrap;
+      color:#1F3864;opacity:.08;pointer-events:none;z-index:5;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="app-head no-print">
+    <h1>Nurse Resume Builder</h1>
+    <p>Fill in your details, watch the live preview, then download a clean PDF or an editable Word file. Your entries save automatically on this device.</p>
+  </header>
+
+  <!-- Tabs -->
+  <nav class="tabs no-print" role="tablist" aria-label="Builder sections">
+    <button class="tab-btn" role="tab" id="tabbtn-resume" aria-selected="true" aria-controls="panel-resume" data-tab="resume">Resume</button>
+    <button class="tab-btn" role="tab" id="tabbtn-cover" aria-selected="false" aria-controls="panel-cover" data-tab="cover">Cover Letter</button>
+    <button class="tab-btn" role="tab" id="tabbtn-refs" aria-selected="false" aria-controls="panel-refs" data-tab="refs">References</button>
+    <button class="tab-btn" role="tab" id="tabbtn-jobs" aria-selected="false" aria-controls="panel-jobs" data-tab="jobs">Jobs</button>
+  </nav>
+
+  <!-- ================= RESUME TAB ================= -->
+  <section class="tab-panel active" id="panel-resume" role="tabpanel" aria-labelledby="tabbtn-resume">
+    <div class="no-print">
+      <div class="card">
+        <h2>Your header</h2>
+        <div class="grid">
+          <div><label for="h-name">Full name</label><input type="text" id="h-name" data-header="name" autocomplete="name"></div>
+          <div><label for="h-cred">Credentials (after name)</label><input type="text" id="h-cred" data-header="credentials" placeholder="BSN, RN"></div>
+          <div class="full"><label for="h-title">Title line</label><input type="text" id="h-title" data-header="title"></div>
+          <div><label for="h-phone">Phone</label><input type="tel" id="h-phone" data-header="phone" autocomplete="tel"></div>
+          <div><label for="h-email">Email</label><input type="email" id="h-email" data-header="email" autocomplete="email"></div>
+          <div><label for="h-city">City, State</label><input type="text" id="h-city" data-header="city"></div>
+          <div><label for="h-linkedin">LinkedIn</label><input type="text" id="h-linkedin" data-header="linkedin" placeholder="linkedin.com/in/yourname"></div>
+          <div><label for="h-license">License number (shown as RN Lic.)</label><input type="text" id="h-license" data-header="license"></div>
+        </div>
       </div>
 
-      <div id="appView">
-      <header class="top">
-        <h1>Voice Dictation</h1>
-        <p class="sub"><span class="ru">Dictate your ideas into typing.</span>
-        <span class="ru">Boliye — text khud likha jayega.</span>
-        Speak on your phone or laptop and your words land in the editor below, ready to clean up, copy, or save as a file. Urdu, Hindi, and English are all supported.</p>
-      </header>
-
-      <div class="services-strip" aria-label="HireSparkStudio services">
-        <span><b>Cover Letter Writer</b></span>
-        <span><b>Letter of Intent</b></span>
-        <span><b>Motivational Letter Writer</b></span>
-        <span><b>Statement of Interest</b></span>
-        <span><b>Proposal</b></span>
-        <span><b>Manuscript</b></span>
+      <div class="card">
+        <h2>Downloads</h2>
+        <div class="btn-row">
+          <button class="btn" id="btn-pdf-resume" type="button">Download PDF</button>
+          <button class="btn secondary" id="btn-docx-resume" type="button">Download as Word (.docx)</button>
+        </div>
+        <p class="hint">PDF: your browser opens the print view — choose “Save as PDF”. Word: a real editable .docx file.
+        Downloads always fit on one page (long documents shrink automatically) and carry a light “HireSparkStudio” watermark in the centre of the page.
+        Tip for Google Drive: download the .docx, then drag it into your Drive — it opens in Google Docs too.</p>
+        <div class="msg warn" id="msg-resume" role="status"></div>
       </div>
 
-      <section class="panel recorder" aria-label="Recorder">
-        <div class="controls">
-          <div class="field">
-            <label for="lang">Speaking language</label>
-            <select id="lang">
-              <option value="ur-PK" selected>Urdu — اردو (Pakistan)</option>
-              <option value="hi-IN">Hindi — हिन्दी (India)</option>
-              <option value="en-US">English (US)</option>
-              <option value="en-GB">English (UK)</option>
-              <option value="pa-IN">Punjabi — ਪੰਜਾਬੀ</option>
-              <option value="ar-SA">Arabic — العربية</option>
-            </select>
-          </div>
-          <div class="toggles">
-            <button type="button" class="toggle" id="tglContinuous" aria-pressed="true">
-              <span class="sw" aria-hidden="true"></span> Keep listening
-            </button>
-            <button type="button" class="toggle" id="tglClean" aria-pressed="true">
-              <span class="sw" aria-hidden="true"></span> Clean up when I stop
-            </button>
-            <button type="button" class="toggle" id="tglPunct" aria-pressed="true">
-              <span class="sw" aria-hidden="true"></span> Voice punctuation
-            </button>
-          </div>
+      <h2 style="font-size:16px;margin:18px 0 8px">Resume sections</h2>
+      <p class="hint">Edit any section below. Use the arrows to reorder, the eye to show/hide, and ✕ to delete. The preview updates as you type.</p>
+      <div id="sections-editor"></div>
+
+      <div class="card">
+        <h2>Add a section</h2>
+        <p class="hint">Tap to add one of these ready-made sections:</p>
+        <div class="chip-row" id="add-section-chips"></div>
+        <h3>Add your own section</h3>
+        <div class="grid">
+          <div><label for="custom-title">Section title</label><input type="text" id="custom-title" placeholder="e.g. Research Experience"></div>
+          <div style="display:flex;align-items:flex-end"><button class="btn" id="btn-custom" type="button" style="width:100%">Add Your Own Section</button></div>
         </div>
-
-        <div class="punct-help" role="note">
-          <b>Bol kar punctuation lagayen:</b>
-          <span>Say</span> <code>full stop → .</code> <code>comma → ,</code> <code>question mark → ?</code> <code>exclamation mark → !</code> <code>semicolon → ;</code> <code>colon → :</code> <code>dash → -</code> <code>apostrophe → '</code> <code>percent → %</code> <code>at sign → @</code> <code>open / close bracket → ( )</code> <code>open / close quote → “ ”</code> <code>new line</code> <code>new paragraph</code>
-          <span>Urdu mein bhi: <code>فل اسٹاپ → ۔</code> <code>کاما → ،</code> <code>سوالیہ نشان → ؟</code> <code>فجائیہ نشان → !</code></span>
-        </div>
-
-        <div class="notice" id="unsupported" hidden>
-          This browser can't do live dictation. Open this page in <strong>Chrome</strong> or <strong>Edge</strong> (phone or laptop) and the mic will work. The editor, cleanup tools, and downloads below work everywhere.
-        </div>
-
-        <div class="rec-top">
-          <div class="mic-zone">
-            <button type="button" class="mic-btn" id="micBtn" aria-label="Start dictation">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <rect x="9" y="2.5" width="6" height="11" rx="3" fill="currentColor" stroke="none"/>
-                <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0"/>
-                <path d="M12 18.5v3"/>
-              </svg>
-            </button>
-            <div class="mic-label" id="micLabel">Tap to speak</div>
-            <div class="timer" id="timer" aria-hidden="true"></div>
-          </div>
-          <div class="rec-main">
-            <canvas id="wave" width="640" height="64" aria-hidden="true"></canvas>
-            <div class="status" id="status" role="status" aria-live="polite"><span class="dot"></span><span id="statusText">Ready. Pick your language, tap the mic, and start talking.</span></div>
-            <div class="live-strip" id="liveStrip">
-              <span class="lbl">Hearing now</span>
-              <span class="hearing" id="liveText">—</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="panel" aria-label="Your text">
-        <div class="editor-head">
-          <h2>Your text</h2>
-          <div class="counts" id="counts">0 words · 0 characters</div>
-        </div>
-        <textarea id="editor" dir="rtl" class="urdu" placeholder="Aap ki boli hui text yahan aayegi… You can also type or paste here, and edit anything before saving." aria-label="Dictated text editor"></textarea>
-
-        <div class="toolbar">
-          <button type="button" class="btn primary" id="btnCopy">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            Copy text
-          </button>
-          <button type="button" class="btn" id="btnTxt">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M4 21h16"/></svg>
-            Download .txt
-          </button>
-          <button type="button" class="btn" id="btnDoc">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 14h6M9 17h6"/></svg>
-            Download Word file
-          </button>
-          <button type="button" class="btn" id="btnHtml">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M4 21h16"/></svg>
-            Download HTML app
-          </button>
-          <button type="button" class="btn danger" id="btnClear">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-            Clear
-          </button>
-          <button type="button" class="btn" id="btnUndo">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
-            Undo last change
-          </button>
-        </div>
-
-        <div class="cleanup">
-          <h3>Rewrite &amp; paraphrase</h3>
-          <p>Rewords your text right here on your device — no need to send it anywhere. Pick a style, then read the result once before using it; Undo brings the old text back.</p>
-          <div class="row">
-            <button type="button" class="btn" id="btnReword">Reword my text</button>
-            <button type="button" class="btn" id="btnShorten">Make it shorter</button>
-            <button type="button" class="btn" id="btnFormal">Make it formal</button>
-          </div>
-        </div>
-
-        <div class="cleanup">
-          <h3>Clean-up tools</h3>
-          <p>One tap fixes the small mistakes dictation usually leaves behind. Nothing changes until you tap.</p>
-          <div class="row">
-            <button type="button" class="btn" id="btnTidy">Tidy spacing &amp; punctuation</button>
-            <button type="button" class="btn" id="btnFillers">Remove filler words &amp; repeats</button>
-            <button type="button" class="btn" id="btnCase">Sentence case</button>
-            <button type="button" class="btn" id="btnParas">Split into paragraphs</button>
-          </div>
-        </div>
-      </section>
-
-      <section class="panel tips" aria-label="Tips for accurate dictation">
-        <h2>For fewer mistakes</h2>
-        <ol>
-          <li><strong>Speak at a steady, natural pace</strong> — not word by word. Dictation understands full sentences far better than single words.</li>
-          <li><strong>Say your punctuation out loud — it converts automatically:</strong> “full stop” → ., “comma” → ,, “question mark” → ?, “exclamation mark” → !, “semicolon” → ;, “colon” → :, “dash”, “apostrophe”, “percent”, “at sign”, “open / close bracket”, “open / close quote”, “new line”, “new paragraph”. One-word forms like “fullstop” and “questionmark” work too. Urdu mein bhi: “فل اسٹاپ” → ۔, “کاما” → ،, “سوالیہ نشان” → ؟, “فجائیہ نشان” → !. Keep “Voice punctuation” ON (above) for this, and the first letter of every new sentence is capitalised for you.</li>
-          <li><strong>Keep the room quiet and the phone close</strong> — about a hand's length from your mouth. Background TV or fans are the biggest cause of wrong words.</li>
-          <li><strong>Names and rare words may still come out wrong.</strong> Fix them once in the editor, then use Copy or Download — your corrected text is what gets saved.</li>
-          <li><strong>Long session?</strong> Leave “Keep listening” on and the mic restarts by itself after short pauses, so you can dictate a whole document in one go.</li>
-        </ol>
-        <p class="small">On a laptop, Chrome and Edge give the best results. On Android, use Chrome; on iPhone, dictation works in Safari and Chrome on recent iOS versions. The mic needs internet access, because the browser sends your voice to its speech service to convert it. <strong>Saved this page as an HTML file?</strong> Aap is page ko HTML file ke taur par download karke Chrome ya Edge mein khol kar bhi dictation use kar sakte hain — bas mic permission Allow karen aur internet on rakhen. Use the “Download HTML app” button above to save a copy you can share with others.</p>
-      </section>
-
-      <!-- Contact section -->
-      <section class="panel" id="contactSection" aria-label="Contact HireSparkStudio">
-        <div class="contact-grid">
-          <div>
-            <p style="margin:0 0 4px; font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--accent-dark)">Contact</p>
-            <h2>HireSparkStudio</h2>
-            <p style="color:var(--muted); margin:0 0 6px">Resume, cover letter ya motivational letter likhwana hai? Call ya WhatsApp par rabta karen — ya pehle yahin dictation se apna draft bana len.</p>
-            <a class="phone-big" href="tel:+923266294334">0326-6294334</a>
-            <div style="color:var(--muted); font-size:14px">Phone / WhatsApp — tap to call</div>
-            <div class="contact-actions">
-              <a class="btn primary" href="tel:+923266294334" style="text-decoration:none">Call 0326-6294334</a>
-              <a class="btn whatsapp" href="https://wa.me/923266294334" target="_blank" rel="noopener" style="text-decoration:none">WhatsApp</a>
-            </div>
-            <p style="margin:14px 0 0; font-size:14px; color:var(--muted)">Developer: <strong style="color:var(--ink)">Muhammad Irfan</strong></p>
-          </div>
-          <div>
-            <h3>Our writing services</h3>
-            <ul class="service-list">
-              <li><strong>Resume Writer</strong> — ATS-friendly RN &amp; professional resumes</li>
-              <li><strong>CV Writer</strong> — academic &amp; professional CVs</li>
-              <li><strong>Cover Letter Writer</strong> — job-matched cover letters</li>
-              <li><strong>Letter of Intent</strong> — for study &amp; job applications</li>
-              <li><strong>Motivational Letter Writer</strong> — scholarships &amp; admissions</li>
-              <li><strong>Statement of Interest / SOP</strong> — supervisor &amp; university applications</li>
-              <li><strong>Proposal Writing</strong> — research &amp; project proposals</li>
-              <li><strong>Manuscript Preparation</strong> — journal manuscripts &amp; academic papers</li>
-            </ul>
-            <p style="color:var(--muted); font-size:13.5px; margin-top:12px">Dictate your draft above in Urdu or English, clean it with Rewrite / Formal, then send it on WhatsApp for a polished final version.</p>
-          </div>
-        </div>
-      </section>
-      </div><!-- /appView -->
-
-      <!-- Login view (preview — by name only for now, as requested) -->
-      <div id="loginView" hidden>
-        <section class="panel login-wrap" aria-label="Login">
-          <p style="margin:0 0 4px; font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--accent-dark)">HireSparkStudio</p>
-          <h2>Login</h2>
-          <p>Sign in to HireSparkStudio. Accounts are not active yet — this page is a preview for now, and dictation works without logging in.</p>
-          <form class="login-form" id="loginForm" novalidate>
-            <div>
-              <label for="loginName">Name / Email</label>
-              <input id="loginName" name="loginName" type="text" autocomplete="username" placeholder="Your name or email" />
-            </div>
-            <div>
-              <label for="loginPass">Password</label>
-              <input id="loginPass" name="loginPass" type="password" autocomplete="current-password" placeholder="Your password" />
-            </div>
-            <div class="login-msg" id="loginMsg" hidden></div>
-            <button type="submit" class="btn primary" style="justify-content:center; width:100%">Login</button>
-            <button type="button" class="textlink" id="backToApp">← Back to Dictation (no login needed)</button>
-          </form>
-          <p style="font-size:13.5px; color:var(--muted); margin-top:14px">Need a resume or letter? Contact: <a href="tel:+923266294334" style="color:var(--accent-dark); font-weight:700">0326-6294334</a> • Developer: Muhammad Irfan</p>
-        </section>
       </div>
 
-      <footer class="sitefoot">
-        <span>© <strong>HireSparkStudio</strong> — Resume Writer • Cover Letter • Letter of Intent • Motivational Letter</span>
-        <span>Developed by <strong>Muhammad Irfan</strong> • <a href="tel:+923266294334" style="color:inherit; font-weight:700">0326-6294334</a></span>
-      </footer>
+      <div class="card">
+        <h2>Start over</h2>
+        <div class="btn-row">
+          <button class="btn secondary" id="btn-sample" type="button">Load sample</button>
+          <button class="btn danger" id="btn-clear" type="button">Clear all</button>
+        </div>
+        <p class="hint">“Load sample” restores the Jane Carter example. “Clear all” empties every field so you can start from a blank page.</p>
+        <div class="msg ok" id="msg-data" role="status"></div>
+      </div>
     </div>
 
-    <script>
-      (function () {
-        var editor = document.getElementById('editor');
-        var liveText = document.getElementById('liveText');
-        var liveStrip = document.getElementById('liveStrip');
-        var statusEl = document.getElementById('status');
-        var statusText = document.getElementById('statusText');
-        var micBtn = document.getElementById('micBtn');
-        var micLabel = document.getElementById('micLabel');
-        var timerEl = document.getElementById('timer');
-        var countsEl = document.getElementById('counts');
-        var langSel = document.getElementById('lang');
-        var unsupportedEl = document.getElementById('unsupported');
-        var btnCopy = document.getElementById('btnCopy');
+    <div class="preview-scroll">
+      <div class="paper" id="resume-preview" aria-label="Resume preview"></div>
+    </div>
+  </section>
 
-        var SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-        var supported = !!SpeechRec;
-        if (!supported) {
-          unsupportedEl.hidden = false;
-          micBtn.disabled = true;
-          micBtn.style.opacity = '.45';
-          micLabel.textContent = 'Mic unavailable here';
-          setStatus('Dictation is not supported in this browser — the editor below still works.', false);
-        }
+  <!-- ================= COVER LETTER TAB ================= -->
+  <section class="tab-panel" id="panel-cover" role="tabpanel" aria-labelledby="tabbtn-cover">
+    <div class="no-print">
+      <div class="card">
+        <h2>Letter details</h2>
+        <div class="grid">
+          <div><label for="c-date">Date</label><input type="date" id="c-date" data-cover="date"></div>
+          <div><label for="c-jobtitle">Job title you are applying for</label><input type="text" id="c-jobtitle" data-cover="jobTitle" placeholder="Registered Nurse — ICU"></div>
+          <div><label for="c-manager">Hiring manager name</label><input type="text" id="c-manager" data-cover="manager" placeholder="Ms. Jane Smith (or leave blank)"></div>
+          <div><label for="c-facility">Hospital / facility</label><input type="text" id="c-facility" data-cover="facility" placeholder="Northwestern Memorial Hospital"></div>
+          <div><label for="c-facility-city">Facility city, state (optional)</label><input type="text" id="c-facility-city" data-cover="facilityCity"></div>
+          <div><label for="c-sender-contact">Your contact line</label><input type="text" id="c-sender-contact" data-cover="senderContact" placeholder="Phone • Email • City, ST"></div>
+        </div>
+        <p class="hint">Your name at the top of the letter uses the name from the Resume tab.</p>
+      </div>
 
-        /* Downloaded HTML copies are supported: dictation works when the
-           file is opened in Chrome / Edge on the user's machine (allow mic
-           + internet for the speech service). Do NOT disable the mic on
-           file:// — only show an honest error if the service is actually
-           unreachable. */
-        var optContinuous = true;
-        var optClean = true;
-        var optPunct = true;
-        function bindToggle(id, fn) {
-          var el = document.getElementById(id);
-          el.addEventListener('click', function () {
-            var on = el.getAttribute('aria-pressed') !== 'true';
-            el.setAttribute('aria-pressed', on ? 'true' : 'false');
-            fn(on);
-          });
-        }
-        bindToggle('tglContinuous', function (on) { optContinuous = on; });
-        bindToggle('tglClean', function (on) { optClean = on; });
-        bindToggle('tglPunct', function (on) { optPunct = on; });
+      <div class="card">
+        <h2>Letter body</h2>
+        <div class="btn-row">
+          <button class="btn" id="btn-generate" type="button">Generate draft</button>
+        </div>
+        <p class="hint">“Generate draft” builds a letter from your details above plus your resume summary and skills. Edit any paragraph afterwards — the preview updates live.</p>
+        <div class="grid">
+          <div class="full"><label for="c-opening">Opening paragraph</label><textarea id="c-opening" data-cover="opening" rows="3"></textarea></div>
+          <div class="full"><label for="c-body1">Body paragraph 1</label><textarea id="c-body1" data-cover="body1" rows="4"></textarea></div>
+          <div class="full"><label for="c-body2">Body paragraph 2</label><textarea id="c-body2" data-cover="body2" rows="4"></textarea></div>
+          <div class="full"><label for="c-closing">Closing paragraph</label><textarea id="c-closing" data-cover="closing" rows="3"></textarea></div>
+          <div><label for="c-signoff">Sign-off</label><input type="text" id="c-signoff" data-cover="signoff"></div>
+        </div>
+      </div>
 
-        /* ---------- view switching: Dictation / Contact / Login ---------- */
-        var appView = document.getElementById('appView');
-        var loginView = document.getElementById('loginView');
-        var navDictation = document.getElementById('navDictation');
-        var navContact = document.getElementById('navContact');
-        var navLogin = document.getElementById('navLogin');
-        function showApp(scrollToContact) {
-          loginView.hidden = true;
-          appView.hidden = false;
-          navDictation.classList.add('active');
-          navLogin.classList.remove('active');
-          if (scrollToContact) {
-            var c = document.getElementById('contactSection');
-            if (c) c.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          } else {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }
-        }
-        function showLogin() {
-          appView.hidden = true;
-          loginView.hidden = false;
-          navDictation.classList.remove('active');
-          navLogin.classList.add('active');
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-          var n = document.getElementById('loginName'); if (n) n.focus();
-        }
-        navDictation.addEventListener('click', function(){ showApp(false); });
-        navContact.addEventListener('click', function(){ showApp(true); });
-        navLogin.addEventListener('click', showLogin);
-        document.getElementById('brandHome').addEventListener('click', function(e){ e.preventDefault(); showApp(false); });
-        document.getElementById('backToApp').addEventListener('click', function(){ showApp(false); });
-        document.getElementById('loginForm').addEventListener('submit', function(e){
-          e.preventDefault();
-          var msg = document.getElementById('loginMsg');
-          var name = document.getElementById('loginName').value.trim();
-          msg.hidden = false;
-          if (!name) { msg.textContent = 'Please enter your name or email first. Accounts will be enabled soon — for now, use Dictation without logging in.'; return; }
-          msg.textContent = 'Hello ' + name + ' — login is a preview only for now and accounts are not active yet. You can use Voice Dictation right away without logging in.';
-        });
+      <div class="card">
+        <h2>Downloads</h2>
+        <div class="btn-row">
+          <button class="btn" id="btn-pdf-cover" type="button">Download PDF</button>
+          <button class="btn secondary" id="btn-docx-cover" type="button">Download as Word (.docx)</button>
+        </div>
+        <p class="hint">Downloads always fit on one page and carry a light “HireSparkStudio” watermark in the centre of the page.</p>
+        <div class="msg warn" id="msg-cover" role="status"></div>
+      </div>
+    </div>
 
-        /* ---------- voice punctuation commands ---------- */
-        // Converts spoken commands like "full stop", "comma", "new line"
-        // (and Urdu: فل اسٹاپ ، کاما ، سوالیہ نشان) into real punctuation.
-        function applyVoicePunctuation(t) {
-          if (!optPunct || !t) return t;
-          var s = ' ' + t + ' ';
-          var PARA = '\u0002', LINE = '\u0003';
-          // 0) Line / paragraph breaks first, kept as placeholders so the
-          //    punctuation clean-up below cannot eat the newlines.
-          s = s.replace(/\s*(?:new paragraph|next paragraph|نیا پیراگراف|نیا پیرا|नया पैराग्राफ)\s*/gi, PARA);
-          s = s.replace(/\s*(?:new line|next line|newline|نئی لائن|नई पंक्ति|नई लाइन)\s*/gi, LINE);
-          // 1) Urdu / Hindi spoken punctuation (script forms)
-          s = s.replace(/\s*(?:فل اسٹاپ|فل سٹاپ|فل استاپ|خاتمہ)\s*/g, '۔ ');
-          s = s.replace(/\s*(?:سوالیہ نشان|سوالیا نشان)\s*/g, '؟ ');
-          s = s.replace(/\s*(?:فجائیہ نشان|ندائیہ نشان|تعجب کا نشان)\s*/g, '! ');
-          s = s.replace(/\s*(?:کاما|کوما|سکتہ|وقفہ)\s*/g, '، ');
-          s = s.replace(/\s*نیم وقفہ\s*/g, '؛ ');
-          s = s.replace(/\s*فیصد\s*/g, '% ');
-          s = s.replace(/\s*(?:पूर्ण विराम)\s*/g, '। ');
-          s = s.replace(/\s*(?:प्रश्न चिह्न|प्रश्नवाचक चिह्न)\s*/g, '? ');
-          s = s.replace(/\s*(?:विस्मयादिबोधक चिह्न)\s*/g, '! ');
-          s = s.replace(/\s*(?:अल्पविराम|अल्प विराम)\s*/g, ', ');
-          s = s.replace(/\s*(?:अर्धविराम|अर्ध विराम)\s*/g, '; ');
-          // Roman-Urdu forms the recogniser sometimes returns in Latin script
-          s = s.replace(/\s+(?:sawaliya nishan|sawalia nishan|sawaliya|sawal)\s*/gi, '؟ ');
-          s = s.replace(/\s+khatma\s*/gi, '۔ ');
-          // 2) Brackets & quotes: opening marks hug the next word,
-          //    closing marks hug the previous word.
-          s = s.replace(/\s*(?:open (?:round )?bracket|open parenthesis|opening bracket|opening parenthesis)\s*/gi, ' (');
-          s = s.replace(/\s*(?:close (?:round )?bracket|closed (?:round )?bracket|close parenthesis|closing bracket|closing parenthesis)\s*/gi, ') ');
-          s = s.replace(/\s*(?:open square bracket|opening square bracket)\s*/gi, ' [');
-          s = s.replace(/\s*(?:close square bracket|closed square bracket|closing square bracket)\s*/gi, '] ');
-          s = s.replace(/\s*(?:open quote|open quotes|opening quote|quote open)\s*/gi, ' “');
-          s = s.replace(/\s*(?:close quote|close quotes|closing quote|quote close|unquote)\s*/gi, '” ');
-          s = s.replace(/\s*(?:open single quote|opening single quote)\s*/gi, ' ‘');
-          s = s.replace(/\s*(?:close single quote|closing single quote)\s*/gi, '’ ');
-          // 3) Marks that join words with no spaces around them
-          //    (word boundaries stop "slash" matching inside "backslash")
-          s = s.replace(/\s*\b(?:apostrophe)\b\s*/gi, '’');
-          s = s.replace(/\s*\b(?:hyphen sign|hyphen)\b\s*/gi, '-');
-          s = s.replace(/\s*\b(?:backslash|back slash)\b\s*/gi, '\\');
-          s = s.replace(/\s*\b(?:forward slash|slash)\b\s*/gi, '/');
-          s = s.replace(/\s*\b(?:underscore|under score)\b\s*/gi, '_');
-          s = s.replace(/\s*\b(?:at sign|at the rate|at rate)\b\s*/gi, '@');
-          // 4) Sentence & clause punctuation. Handles one-word forms the
-          //    recogniser often returns ("fullstop", "questionmark"),
-          //    hyphenated forms, and a mark already typed right after the
-          //    command word ("full stop." must not become "..").
-          s = s.replace(/\s+(?:exclamation (?:mark|point)|exclamation)[!.,]?\s*/gi, '! ');
-          s = s.replace(/\s+(?:question[-\s]?mark)[?.,!]?\s*/gi, '? ');
-          s = s.replace(/\s+(?:full[-\s]?stop)[.!?,]?\s*/gi, '. ');
-          s = s.replace(/\s+(?:semi[-\s]?colon)[;.,]?\s*/gi, '; ');
-          s = s.replace(/\s+(?:comma)[,!?]?\s*/gi, ', ');
-          s = s.replace(/\s+(?:period)[.!?,]?\s*/gi, '. ');
-          s = s.replace(/\s+(?:colon)(?!\s*\/\/)[:.,]?\s*/gi, ': ');
-          s = s.replace(/\s+(?:ellipsis|dot dot dot)\s*/gi, '… ');
-          s = s.replace(/\s+(?:dash|em dash|en dash)\s*/gi, ' — ');
-          s = s.replace(/\s+(?:percent sign|percentage sign|percent|per cent)[.,]?\s*/gi, '% ');
-          s = s.replace(/\s+(?:hash sign|hashtag|pound sign|number sign)\s*/gi, '#');
-          s = s.replace(/\s+(?:asterisk|star sign)\s*/gi, '* ');
-          s = s.replace(/\s+(?:plus sign)\s*/gi, ' + ');
-          s = s.replace(/\s+(?:equals sign|equal sign|equals)\s*/gi, ' = ');
-          s = s.replace(/\s+(?:ampersand|and sign)\s*/gi, ' & ');
-          s = s.replace(/\s+(?:dot)(?=\s+(?:com|org|net|edu|gov|io|co|pk|in)\b)[.,]?\s*/gi, '.');
-          s = s.replace(/\s+(?:dot)\s+/gi, '. ');
-          // 5) Restore breaks, then tidy spacing (never eat newlines)
-          s = s.split(PARA).join('\n\n').split(LINE).join('\n');
-          s = s.replace(/[ \t]+([.,!?;:،۔؟।%\)\]])/g, '$1');
-          s = s.replace(/([\(\[“‘])[ \t]+/g, '$1');
-          s = s.replace(/([.!?।۔؟])\s*([.!?।۔؟])+/g, '$1 ');
-          s = s.replace(/,\s*([.!?।۔؟])/g, '$1');
-          // Add a missing space after punctuation — but never inside a
-          // domain (gmail.com), a decimal (3.5), or a number (1,000).
-          s = s.replace(/([!?;:،۔؟।])([^\s\n.!?;:،۔؟।\%\)\]"”’])/g, '$1 $2');
-          s = s.replace(/,([^\s\n,.\d\%\)\]"”’])/g, ', $1');
-          s = s.replace(/\.([A-Z\u0600-\u06FF\u0900-\u097F])/g, '. $1');
-          s = s.replace(/[ \t]+\n/g, '\n');
-          s = s.replace(/\n[ \t]+/g, '\n');
-          s = s.replace(/[ \t]{2,}/g, ' ');
-          s = s.replace(/\n{3,}/g, '\n\n');
-          return s.trim();
-        }
+    <div class="preview-scroll">
+      <div class="paper" id="cover-preview" aria-label="Cover letter preview"></div>
+    </div>
+  </section>
 
-        /* English grammar: first letter of a new sentence (and of a new
-           dictation session / line) is capital. Urdu/Arabic script has no
-           case, so this only touches a-z letters. */
-        function capitalizeSentences(s) {
-          if (!s) return s;
-          // Capital after every sentence end — . ! ? and the Urdu/Hindi
-          // terminators ۔ ؟ । — as well as at the start of the text and
-          // after a new line / new paragraph.
-          var out = s.replace(/(^|\n[ \t]*|[.!?।۔؟][ \t]+|[.!?।۔؟]\n[ \t]*)([a-z])/g, function (m, pre, ch) { return pre + ch.toUpperCase(); });
-          // Also capitalise standalone "i" as a word in English text
-          out = out.replace(/\bi\b/g, 'I');
-          return out;
-        }
+  <!-- ================= REFERENCES TAB ================= -->
+  <section class="tab-panel" id="panel-refs" role="tabpanel" aria-labelledby="tabbtn-refs">
+    <div class="no-print">
+      <div class="card">
+        <h2>Your references</h2>
+        <p class="hint">Add 3–4 people who know your clinical work — instructors, preceptors, or supervisors. Ask their permission first.</p>
+        <div id="refs-editor"></div>
+        <div class="btn-row">
+          <button class="btn secondary" id="btn-add-ref" type="button">+ Add reference</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Downloads</h2>
+        <div class="btn-row">
+          <button class="btn" id="btn-pdf-refs" type="button">Download PDF</button>
+          <button class="btn secondary" id="btn-docx-refs" type="button">Download as Word (.docx)</button>
+        </div>
+        <p class="hint">Downloads always fit on one page and carry a light “HireSparkStudio” watermark in the centre of the page.</p>
+        <div class="msg warn" id="msg-refs" role="status"></div>
+      </div>
+    </div>
 
-        function setStatus(msg, isErr) {
-          statusText.textContent = msg;
-          statusEl.classList.toggle('err', !!isErr);
-        }
+    <div class="preview-scroll">
+      <div class="paper" id="refs-preview" aria-label="References preview"></div>
+    </div>
+  </section>
 
-        /* ---------- counts ---------- */
-        function updateCounts() {
-          var t = editor.value;
-          var words = t.trim() ? t.trim().split(/\s+/).length : 0;
-          countsEl.textContent = words + (words === 1 ? ' word' : ' words') + ' · ' + t.length + ' characters';
-        }
-        editor.addEventListener('input', updateCounts);
+  <!-- ================= JOBS TAB ================= -->
+  <section class="tab-panel" id="panel-jobs" role="tabpanel" aria-labelledby="tabbtn-jobs">
+    <div class="no-print">
+      <a class="job-board-cta" href="https://irfanhiresparkstudio.github.io/" target="_blank" rel="noopener">Open the HireSparkStudio Job Board — verified new-grad nurse jobs →</a>
 
-        /* ---------- language / direction ---------- */
-        function applyLang() {
-          var lang = langSel.value;
-          var rtl = /^(ur|ar|fa|ps)/.test(lang);
-          editor.dir = rtl ? 'rtl' : 'ltr';
-          editor.classList.toggle('urdu', lang.indexOf('ur') === 0);
-          liveStrip.classList.toggle('urdu', lang.indexOf('ur') === 0);
-          liveStrip.dir = rtl ? 'rtl' : 'ltr';
-          if (lang.indexOf('ur') === 0) {
-            editor.placeholder = 'آپ کی بولی ہوئی تحریر یہاں آئے گی… آپ یہاں لکھ یا پیسٹ بھی کر سکتے ہیں۔';
-          } else if (lang.indexOf('hi') === 0) {
-            editor.placeholder = 'आपकी बोली हुई टेक्स्ट यहाँ आएगी… आप यहाँ टाइप या पेस्ट भी कर सकते हैं।';
-          } else {
-            editor.placeholder = 'Your dictated text will appear here… You can also type or paste here, and edit anything before saving.';
-          }
-        }
-        langSel.addEventListener('change', function () {
-          applyLang();
-          if (wantsRec) {
-            stopDictation();
-            setTimeout(startDictation, 400);
-          }
-        });
-        applyLang();
+      <div class="card">
+        <h2>Latest jobs from the board</h2>
+        <div id="job-feed"><p class="hint">Loading the latest posts…</p></div>
+      </div>
 
-        /* ---------- clean-up tools ---------- */
-        function tidyLine(line) {
-          var t = line.replace(/\s+/g, ' ');
-          t = t.replace(/\s+([,.!?;:،۔؟।%\)\]])/g, '$1');
-          t = t.replace(/([\(\[“‘])\s+/g, '$1');
-          t = t.replace(/([.!?।۔؟])\s*([.!?।۔؟])+/g, '$1 ');
-          t = t.replace(/([a-z0-9.!?])([A-Z])/g, '$1 $2');
-          t = capitalizeSentences(t);
-          return t.trim();
-        }
-        function tidyText(t) {
-          var base = optPunct ? t.split('\n').map(function(l){ return applyVoicePunctuation(l); }).join('\n') : t;
-          return base.split('\n').map(tidyLine).join('\n').replace(/\n{3,}/g, '\n\n');
-        }
-        function removeFillers(t) {
-          var fillers = { um: 1, uh: 1, uhm: 1, erm: 1, er: 1, hmm: 1, mm: 1, mmm: 1 };
-          return t.split('\n').map(function (line) {
-            var toks = line.split(/\s+/).filter(Boolean);
-            var out = [];
-            for (var i = 0; i < toks.length; i++) {
-              var raw = toks[i];
-              var bare = raw.toLowerCase().replace(/[,.!?;:،۔؟"“”'’()]/g, '');
-              if (fillers[bare]) continue;
-              if (out.length && out[out.length - 1].toLowerCase() === raw.toLowerCase()) continue;
-              out.push(raw);
-            }
-            return out.join(' ');
-          }).join('\n');
-        }
-        function sentenceCase(t) {
-          return t.split('\n').map(function (line) {
-            var s = line.toLowerCase();
-            s = s.replace(/(^\s*[a-z])|([.!?।۔؟]\s*[a-z])/g, function (m) { return m.toUpperCase(); });
-            return s;
-          }).join('\n');
-        }
-        function splitParas(t) {
-          var flat = t.replace(/\s+/g, ' ').trim();
-          if (!flat) return t;
-          var sentences = flat.match(/[^.!?۔؟]+[.!?۔؟]+["'”’]?\s*|[^.!?۔؟]+$/g) || [flat];
-          var paras = [];
-          for (var i = 0; i < sentences.length; i += 3) {
-            paras.push(sentences.slice(i, i + 3).join('').trim());
-          }
-          return paras.filter(Boolean).join('\n\n');
-        }
-        var lastSnapshot = null;
-        function runTool(fn, doneMsg) {
-          if (!editor.value.trim()) { setStatus('The editor is empty — dictate or type something first.', true); return; }
-          lastSnapshot = editor.value;
-          editor.value = fn(editor.value);
-          updateCounts();
-          setStatus(doneMsg, false);
-        }
-        document.getElementById('btnUndo').addEventListener('click', function () {
-          if (lastSnapshot === null) { setStatus('Nothing to undo yet.', true); return; }
-          editor.value = lastSnapshot;
-          lastSnapshot = null;
-          updateCounts();
-          setStatus('Undone — your previous text is back.', false);
-        });
-        document.getElementById('btnTidy').addEventListener('click', function () { runTool(tidyText, 'Tidied: spacing, punctuation, and sentence starts fixed.'); });
-        document.getElementById('btnFillers').addEventListener('click', function () { runTool(removeFillers, 'Filler words (um, uh, hmm) and repeated words removed.'); });
-        document.getElementById('btnCase').addEventListener('click', function () { runTool(sentenceCase, 'Sentence case applied — check names, they may need capitals again.'); });
-        document.getElementById('btnParas').addEventListener('click', function () { runTool(splitParas, 'Split into paragraphs of about three sentences each.'); });
+      <div class="card">
+        <h2>Major nurse job portals</h2>
+        <div class="portal-grid">
+          <a class="portal" href="https://www.indeed.com/" target="_blank" rel="noopener">Indeed</a>
+          <a class="portal" href="https://www.linkedin.com/jobs/" target="_blank" rel="noopener">LinkedIn Jobs</a>
+          <a class="portal" href="https://www.glassdoor.com/Job/index.htm" target="_blank" rel="noopener">Glassdoor</a>
+          <a class="portal" href="https://www.vivian.com/" target="_blank" rel="noopener">Vivian Health</a>
+          <a class="portal" href="https://www.nurse.com/" target="_blank" rel="noopener">Nurse.com</a>
+          <a class="portal" href="https://www.healthecareers.com/" target="_blank" rel="noopener">Health eCareers</a>
+        </div>
+      </div>
+    </div>
+  </section>
 
-        /* ---------- rewrite & paraphrase ---------- */
-        function escRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-        function matchCase(orig, repl) {
-          if (orig.length > 1 && orig === orig.toUpperCase()) return repl.toUpperCase();
-          if (orig.charAt(0) === orig.charAt(0).toUpperCase()) return repl.charAt(0).toUpperCase() + repl.slice(1);
-          return repl;
-        }
-        function swapLatin(t, map) {
-          var keys = Object.keys(map).sort(function (a, b) { return b.length - a.length; });
-          var re = new RegExp('\\b(' + keys.map(escRe).join('|') + ')\\b', 'gi');
-          return t.replace(re, function (m) {
-            var repl = map[m.toLowerCase()];
-            return repl ? matchCase(m, repl) : m;
-          });
-        }
-        var PUNCT = '،۔؟!,.…"“”\'’"()';
-        function swapTokens(t, map) {
-          return t.split('\n').map(function (line) {
-            return line.split(/\s+/).map(function (tok) {
-              var lead = '', core = tok, trail = '';
-              while (core && PUNCT.indexOf(core.charAt(0)) >= 0) { lead += core.charAt(0); core = core.slice(1); }
-              while (core && PUNCT.indexOf(core.charAt(core.length - 1)) >= 0) { trail = core.charAt(core.length - 1) + trail; core = core.slice(0, -1); }
-              if (core && map[core]) return lead + map[core] + trail;
-              return tok;
-            }).join(' ');
-          }).join('\n');
-        }
-        var REWORD_MAP = {
-          'due to the fact that': 'because', 'in order to': 'to', 'in my opinion': 'in my view',
-          'a lot of': 'many', 'lots of': 'many',
-          'important': 'significant', 'big': 'large', 'small': 'little', 'fast': 'quick',
-          'quickly': 'rapidly', 'start': 'begin', 'end': 'finish', 'help': 'assist',
-          'show': 'display', 'need': 'require', 'use': 'utilize', 'buy': 'purchase',
-          'many': 'numerous', 'often': 'frequently', 'sometimes': 'occasionally',
-          'usually': 'generally', 'hard': 'difficult', 'easy': 'simple', 'problem': 'issue',
-          'idea': 'concept', 'people': 'individuals', 'kids': 'children', 'talk': 'speak',
-          'make': 'create', 'company': 'organization', 'money': 'funds', 'price': 'cost',
-          'cheap': 'inexpensive', 'expensive': 'costly', 'happy': 'glad', 'beautiful': 'lovely',
-          'smart': 'intelligent', 'choose': 'select', 'try': 'attempt', 'check': 'verify',
-          'fix': 'repair', 'change': 'modify', 'improve': 'enhance', 'increase': 'raise',
-          'decrease': 'reduce', 'allow': 'permit', 'enough': 'sufficient', 'almost': 'nearly',
-          'actually': 'in fact', 'basically': 'essentially', 'maybe': 'perhaps', 'sure': 'certain',
-          'different': 'distinct', 'same': 'identical', 'main': 'primary', 'great': 'excellent',
-          'bad': 'poor', 'wrong': 'incorrect', 'answer': 'response', 'result': 'outcome',
-          'part': 'section', 'place': 'location', 'soon': 'shortly', 'later': 'subsequently',
-          'finally': 'ultimately', 'next': 'following', 'last': 'final', 'yearly': 'annual',
-          'carefully': 'cautiously'
-        };
-        var REWORD_TOKENS = {
-          'لیکن': 'تاہم', 'مدد': 'معاونت', 'شروع': 'آغاز', 'بہت': 'نہایت',
-          'बहुत': 'अत्यंत', 'मदद': 'सहायता', 'शुरू': 'आरंभ', 'लेकिन': 'किन्तु'
-        };
-        var SHORTEN_MAP = {
-          'due to the fact that': 'because', 'in spite of the fact that': 'although',
-          'in the event that': 'if', 'at this point in time': 'now', 'in order to': 'to',
-          'has the ability to': 'can', 'have the ability to': 'can',
-          'a large number of': 'many', 'in the near future': 'soon',
-          'for the purpose of': 'for', 'with regard to': 'about',
-          'in addition to': 'besides', 'on a daily basis': 'daily',
-          'prior to': 'before', 'subsequent to': 'after'
-        };
-        var FORMAL_MAP = {
-          "don't": 'do not', "doesn't": 'does not', "didn't": 'did not', "can't": 'cannot',
-          "couldn't": 'could not', "won't": 'will not', "wouldn't": 'would not',
-          "shouldn't": 'should not', "isn't": 'is not', "aren't": 'are not',
-          "wasn't": 'was not', "weren't": 'were not', "haven't": 'have not',
-          "hasn't": 'has not', "hadn't": 'had not', "it's": 'it is', "that's": 'that is',
-          "there's": 'there is', "what's": 'what is', "i'm": 'I am', "i've": 'I have',
-          "i'll": 'I will', "we're": 'we are', "we've": 'we have', "we'll": 'we will',
-          "you're": 'you are', "you've": 'you have', "you'll": 'you will',
-          "they're": 'they are', "they've": 'they have', "let's": 'let us',
-          'gonna': 'going to', 'wanna': 'want to', 'gotta': 'have to',
-          'yeah': 'yes', 'thanks': 'thank you', 'kind of': 'somewhat', 'sort of': 'somewhat',
-          'a lot of': 'many', 'kids': 'children', 'buy': 'purchase',
-          'cheap': 'inexpensive', 'big': 'large'
-        };
-        var FORMAL_TOKENS = { 'لیکن': 'تاہم', 'بہت': 'نہایت' };
-        function rewordText(t) { return swapTokens(swapLatin(t, REWORD_MAP), REWORD_TOKENS); }
-        function shortenText(t) { return removeFillers(swapLatin(t, SHORTEN_MAP)); }
-        function formalText(t) { return swapTokens(swapLatin(t, FORMAL_MAP), FORMAL_TOKENS); }
-        document.getElementById('btnReword').addEventListener('click', function () { runTool(rewordText, 'Reworded with alternative words and phrases. Read it once — Undo brings the old version back.'); });
-        document.getElementById('btnShorten').addEventListener('click', function () { runTool(shortenText, 'Shortened: long phrases compressed and fillers removed.'); });
-        document.getElementById('btnFormal').addEventListener('click', function () { runTool(formalText, 'Made formal: contractions expanded and formal words used.'); });
+  <footer class="app-foot no-print">Built with HireSparkStudio</footer>
+</div>
 
-        /* ---------- copy & download ---------- */
-        btnCopy.addEventListener('click', function () {
-          if (!editor.value) { setStatus('Nothing to copy yet — the editor is empty.', true); return; }
-          function done() {
-            btnCopy.classList.add('copied');
-            var old = btnCopy.lastChild.textContent;
-            btnCopy.lastChild.textContent = ' Copied';
-            setTimeout(function () { btnCopy.classList.remove('copied'); btnCopy.lastChild.textContent = old; }, 1600);
-            setStatus('Copied. Paste it into Word, Google Docs, or any file with Ctrl+V (long-press on phone).', false);
-          }
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(editor.value).then(done, function () { fallback(); });
-          } else { fallback(); }
-          function fallback() {
-            editor.focus(); editor.select();
-            try { document.execCommand('copy'); done(); }
-            catch (e) { setStatus('Copy failed — select the text and copy it manually.', true); }
-            editor.setSelectionRange(editor.value.length, editor.value.length);
-          }
-        });
-        function download(name, blob) {
-          var url = URL.createObjectURL(blob);
-          var a = document.createElement('a');
-          a.href = url; a.download = name;
-          document.body.appendChild(a); a.click();
-          document.body.removeChild(a);
-          setTimeout(function () { URL.revokeObjectURL(url); }, 800);
-        }
-        document.getElementById('btnTxt').addEventListener('click', function () {
-          if (!editor.value) { setStatus('Nothing to download yet — the editor is empty.', true); return; }
-          download('dictation.txt', new Blob([editor.value], { type: 'text/plain;charset=utf-8' }));
-          setStatus('Saved as dictation.txt — open it in any app, or move it into Word or Google Docs.', false);
-        });
-        document.getElementById('btnDoc').addEventListener('click', function () {
-          if (!editor.value) { setStatus('Nothing to download yet — the editor is empty.', true); return; }
-          var rtl = editor.dir === 'rtl';
-          var body = editor.value.split('\n').map(function (line) {
-            var esc = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            return '<p style="font-family:Calibri,Arial,sans-serif;font-size:12pt;line-height:1.6;' + (rtl ? 'direction:rtl;text-align:right;' : '') + '">' + (esc || '&nbsp;') + '</p>';
-          }).join('');
-          var html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>Dictation</title></head><body>' + body + '</body></html>';
-          download('dictation.doc', new Blob(['\ufeff' + html], { type: 'application/msword' }));
-          setStatus('Saved as dictation.doc — it opens directly in Microsoft Word.', false);
-        });
-        document.getElementById('btnHtml').addEventListener('click', function () {
-          try {
-            var clone = document.documentElement.cloneNode(true);
-            var ced = clone.querySelector('#editor'); if (ced) { ced.textContent = ''; }
-            var clive = clone.querySelector('#liveText'); if (clive) clive.textContent = '—';
-            var cstatus = clone.querySelector('#statusText'); if (cstatus) cstatus.textContent = 'Ready. Pick your language, tap the mic, and start talking.';
-            var htmlDoc = '<!doctype html>\n' + clone.outerHTML;
-            download('Voice-Dictation-HireSparkStudio.html', new Blob([htmlDoc], { type: 'text/html;charset=utf-8' }));
-            setStatus('HTML app saved — is file ko Chrome ya Edge mein khol kar koi bhi dictation use kar sakta hai. Mic Allow karen aur internet on rakhen.', false);
-          } catch (e) {
-            setStatus('HTML download failed here — browser menu se Save As karke file save kar len, wo bhi chalegi.', true);
-          }
-        });
-        document.getElementById('btnClear').addEventListener('click', function () {
-          if (wantsRec) stopDictation();
-          if (editor.value) lastSnapshot = editor.value;
-          editor.value = '';
-          liveText.textContent = '—';
-          updateCounts();
-          setStatus('Cleared. Tap the mic whenever you are ready to dictate again.', false);
-          editor.focus();
-        });
+<script>
+/* =====================================================================
+   Nurse Resume Builder — app logic (classic script, no modules).
+   State is kept in one object, auto-saved to localStorage, and every
+   preview re-renders from that state so form, preview and exports agree.
+   ===================================================================== */
+(function(){
+"use strict";
 
-        /* ---------- waveform ---------- */
-        var canvas = document.getElementById('wave');
-        var ctx = canvas.getContext('2d');
-        var audioCtx = null, analyser = null, micStream = null, rafId = null, freqData = null;
-        function sizeCanvas() {
-          var dpr = window.devicePixelRatio || 1;
-          var w = canvas.clientWidth, h = canvas.clientHeight;
-          if (w > 0) { canvas.width = w * dpr; canvas.height = h * dpr; }
+/* ---------- Sample data: transcribed from the Jane Carter reference resume ---------- */
+var SAMPLE = {
+  header: {
+    name: "JANE M. CARTER",
+    credentials: "BSN, RN",
+    title: "REGISTERED NURSE | MEDICAL SURGICAL & CRITICAL CARE",
+    phone: "(555) 123-4567",
+    email: "jane.carter@email.com",
+    city: "Chicago, IL",
+    linkedin: "linkedin.com/in/janecarter",
+    license: "01234567"
+  },
+  sections: [
+    {
+      id: "summary", kind: "summary", title: "Professional Summary", visible: true,
+      headingChoice: "Professional Summary",
+      text: "Compassionate, high-performing Registered Nurse (BSN, RN) with comprehensive clinical training in high-acuity medical-surgical, telemetry, and intensive care environments. Proven expertise in rapid patient assessment, medication administration, evidence-based bedside care, and interdisciplinary collaboration across multidisciplinary healthcare teams. Proficient in Epic and Cerner EHR platforms with a relentless dedication to patient safety, clinical accuracy, and patient-centered healing outcomes."
+    },
+    {
+      id: "licenses", kind: "entries", title: "Licenses & Certifications", visible: true,
+      entries: [
+        { heading: "Registered Nurse (RN) — State of Illinois Board of Nursing (License #01234567)", right: "Active | Exp. 05/2027", line1: "", line2: "", bullets: [] },
+        { heading: "Basic Life Support (BLS) — American Heart Association (AHA)", right: "Exp. 03/2026", line1: "", line2: "", bullets: [] },
+        { heading: "Advanced Cardiovascular Life Support (ACLS) — American Heart Association (AHA)", right: "Exp. 03/2026", line1: "", line2: "", bullets: [] },
+        { heading: "NIH Stroke Scale (NIHSS) Certification — National Stroke Association", right: "Certified", line1: "", line2: "", bullets: [] }
+      ]
+    },
+    {
+      id: "experience", kind: "entries", title: "Clinical & Professional Experience", visible: true,
+      entries: [
+        {
+          heading: "Graduate Nurse Practicum — Northwestern Memorial Hospital — Chicago, IL",
+          right: "", line1: "Jan 2024 – May 2024",
+          line2: "Medical-Surgical & Telemetry Inpatient Unit (32-Bed Capacity)",
+          bullets: [
+            "Direct Patient Care: Provided direct patient care to 5–6 complex adult patients per shift under preceptor guidance, administering scheduled and PRN IV/PO medications with zero medication errors.",
+            "Assessment & EHR: Executed thorough head-to-toe physical assessments, documented diagnostic telemetry findings, and managed telemetry continuous cardiac rhythms in Epic EHR.",
+            "Care Coordination: Participated in daily multi-professional bedside rounds, advocating for patient needs and communicating acute clinical status updates to attending physicians.",
+            "Patient Education: Delivered comprehensive discharge education to over 70 patients and families, covering wound dressings, medication management, and preventive post-acute care."
+          ]
+        },
+        {
+          heading: "Student Nurse Clinical Rotations — University of Illinois Hospital & Health Sciences — Chicago, IL",
+          right: "", line1: "Aug 2022 – Dec 2023",
+          line2: "800+ Approved Clinical Hours Across Specialized Inpatient Rotations",
+          bullets: [
+            "Critical Care: ICU & Emergency Dept (240 hrs): Assisted with Level 1 trauma resuscitation, Code Blue workflows, central line maintenance, and critical invasive airway monitoring.",
+            "Acute Medical: Pediatrics, L&D & Med-Surg (560 hrs): Managed pediatric vitals, postpartum assessments, neonatal screenings, surgical incision wound care, and sterile Foley catheterizations."
+          ]
         }
-        sizeCanvas();
-        window.addEventListener('resize', sizeCanvas);
-        function barColor() {
-          return getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#0c7a5c';
+      ]
+    },
+    {
+      id: "education", kind: "entries", title: "Education", visible: true,
+      entries: [
+        {
+          heading: "Bachelor of Science in Nursing (BSN) — University of Illinois Chicago — Chicago, IL",
+          right: "", line1: "Graduated: May 2024", line2: "",
+          bullets: [
+            "Honors: Magna Cum Laude | Cumulative GPA: 3.88 / 4.0 | Dean's List (6 Consecutive Semesters)",
+            "Affiliations & Leadership: Student Nurses Association (SNA) — Vice Chair, Sigma Theta Tau Honor Society"
+          ]
         }
-        function drawIdle() {
-          var w = canvas.width, h = canvas.height;
-          ctx.clearRect(0, 0, w, h);
-          ctx.fillStyle = barColor();
-          var bars = 48, bw = w / bars;
-          for (var i = 0; i < bars; i++) {
-            var bh = h * 0.08;
-            ctx.globalAlpha = 0.35;
-            ctx.fillRect(i * bw + bw * 0.25, (h - bh) / 2, bw * 0.5, bh);
-          }
-          ctx.globalAlpha = 1;
-        }
-        function drawWave(t) {
-          var w = canvas.width, h = canvas.height;
-          ctx.clearRect(0, 0, w, h);
-          ctx.fillStyle = barColor();
-          var bars = 48, bw = w / bars;
-          var i, v;
-          if (analyser && freqData) {
-            analyser.getByteFrequencyData(freqData);
-            for (i = 0; i < bars; i++) {
-              v = freqData[Math.floor(i * freqData.length / bars / 1.6)] / 255;
-              var bh = Math.max(h * 0.06, v * h * 0.92);
-              ctx.globalAlpha = 0.45 + v * 0.55;
-              ctx.fillRect(i * bw + bw * 0.25, (h - bh) / 2, bw * 0.5, bh);
-            }
-          } else {
-            for (i = 0; i < bars; i++) {
-              v = 0.25 + 0.22 * Math.sin(t / 260 + i * 0.55) + 0.12 * Math.sin(t / 130 + i * 1.3);
-              var bh2 = Math.max(h * 0.06, v * h);
-              ctx.globalAlpha = 0.6;
-              ctx.fillRect(i * bw + bw * 0.25, (h - bh2) / 2, bw * 0.5, bh2);
-            }
-          }
-          ctx.globalAlpha = 1;
-          if (wantsRec) rafId = requestAnimationFrame(drawWave);
-        }
-        function startWave() {
-          sizeCanvas();
-          if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
-              micStream = stream;
-              try {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                var src = audioCtx.createMediaStreamSource(stream);
-                analyser = audioCtx.createAnalyser();
-                analyser.fftSize = 256;
-                freqData = new Uint8Array(analyser.frequencyBinCount);
-                src.connect(analyser);
-              } catch (e) { analyser = null; }
-              rafId = requestAnimationFrame(drawWave);
-            }, function () { rafId = requestAnimationFrame(drawWave); });
-          } else {
-            rafId = requestAnimationFrame(drawWave);
-          }
-        }
-        function stopWave() {
-          if (rafId) cancelAnimationFrame(rafId);
-          rafId = null;
-          if (micStream) { micStream.getTracks().forEach(function (tr) { tr.stop(); }); micStream = null; }
-          if (audioCtx) { audioCtx.close().catch(function () {}); audioCtx = null; }
-          analyser = null;
-          drawIdle();
-        }
-        drawIdle();
+      ]
+    },
+    {
+      id: "skills", kind: "bullets", title: "Core Competencies & Clinical Skills", visible: true,
+      bullets: [
+        "Clinical Skills: Patient Triage & Physical Assessment, IV Insertion & Venipuncture, Wound & Ostomy Care, Foley Catheterization, Medication Administration (PO/IV/IM/SubQ), Blood Transfusions, Telemetry Rhythm Interpretation.",
+        "Emergency & Protocols: ACLS / BLS Code Protocols, Rapid Response Team Assistance, Infection Prevention (CDC / OSHA Standards), HIPAA & Patient Rights Compliance, Sterile Technique.",
+        "Healthcare Tech & EHR: Epic Systems, Cerner Millennium, Meditech, Pyxis MedStation, Omnicell, Alaris Smart Pumps, Philips Bedside Monitors."
+      ]
+    }
+  ],
+  cover: {
+    date: "", jobTitle: "", manager: "", facility: "", facilityCity: "",
+    senderContact: "",
+    opening: "", body1: "", body2: "", closing: "",
+    signoff: "Sincerely,"
+  },
+  references: [
+    { name: "", title: "", facility: "", phone: "", email: "" },
+    { name: "", title: "", facility: "", phone: "", email: "" },
+    { name: "", title: "", facility: "", phone: "", email: "" }
+  ]
+};
 
-        /* ---------- timer ---------- */
-        var timerInt = null, startStamp = 0;
-        function fmt(s) { return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2); }
-        function startTimer() {
-          startStamp = Date.now();
-          timerEl.textContent = '0:00';
-          timerInt = setInterval(function () {
-            timerEl.textContent = fmt(Math.floor((Date.now() - startStamp) / 1000));
-          }, 500);
-        }
-        function stopTimer() {
-          if (timerInt) clearInterval(timerInt);
-          timerInt = null;
-          timerEl.textContent = '';
-        }
+/* ---------- Optional sections the buyer can add with one tap ---------- */
+var OPTIONAL_SECTIONS = [
+  { key: "rotations",   title: "Clinical Rotations",                    kind: "entries" },
+  { key: "volunteer",   title: "Volunteer Work",                        kind: "entries" },
+  { key: "awards",      title: "Awards & Honors",                       kind: "bullets" },
+  { key: "memberships", title: "Professional Memberships",              kind: "bullets" },
+  { key: "languages",   title: "Languages",                             kind: "bullets" },
+  { key: "capstone",    title: "Capstone / Quality Improvement Project", kind: "entries" },
+  { key: "training",    title: "Additional Training & Courses",         kind: "bullets" },
+  { key: "publications",title: "Publications & Research",               kind: "bullets" }
+];
 
-        /* ---------- speech recognition ---------- */
-        var recog = null;
-        var wantsRec = false;
-        var baseText = '';
-        var sessionFinal = '';
-        var restartTimer = null;
-        var gotResult = false;
-        var emptyRestarts = 0;
+/* ---------- State ---------- */
+var LS_KEY = "hirespark-nurse-resume-builder-v1";
+var state = loadState();
+var uidCounter = 100;
+function nextId(prefix){ return prefix + "-" + (++uidCounter) + "-" + Date.now().toString(36); }
+function deepCopy(o){ return JSON.parse(JSON.stringify(o)); }
 
-        function joinSession() {
-          var s = sessionFinal;
-          if (!baseText) return s;
-          var sep = /[\s\n]$/.test(baseText) ? '' : ' ';
-          return baseText + sep + s;
-        }
-        function createRecog() {
-          var r = new SpeechRec();
-          r.lang = langSel.value;
-          r.continuous = true;
-          r.interimResults = true;
-          r.maxAlternatives = 1;
-          r.onresult = function (e) {
-            gotResult = true;
-            emptyRestarts = 0;
-            var interim = '';
-            for (var i = e.resultIndex; i < e.results.length; i++) {
-              var t = e.results[i][0].transcript;
-              if (e.results[i].isFinal) {
-                var converted = applyVoicePunctuation(t);
-                if (sessionFinal && !/[\s\n]$/.test(sessionFinal) && !/^[\s\n]/.test(converted) && !/^[.,!?;:،۔؟]/.test(converted)) sessionFinal += ' ';
-                sessionFinal += converted;
-              } else {
-                interim += t;
-              }
-            }
-            editor.value = capitalizeSentences(joinSession());
-            updateCounts();
-            editor.scrollTop = editor.scrollHeight;
-            liveText.textContent = interim ? capitalizeSentences(applyVoicePunctuation(interim)) : '…';
-          };
-          r.onerror = function (e) {
-            if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
-              wantsRec = false;
-              setStatus('Microphone is blocked. Allow mic access for this page in your browser settings, then tap the mic again.', true);
-              finishUI();
-            } else if (e.error === 'network') {
-              /* The speech service is unreachable (usually offline).
-                 Stop for real — restarting here loops silently forever
-                 and writes nothing. */
-              wantsRec = false;
-              if (restartTimer) { clearTimeout(restartTimer); restartTimer = null; }
-              finishUI();
-              setStatus('Speech service unreachable — dictation needs an internet connection, so listening has stopped. Reconnect and tap the mic again.', true);
-            } else if (e.error === 'no-speech') {
-              if (wantsRec) setStatus('Listening… I have not heard anything yet — try speaking a little closer to the mic.', false);
-            } else if (e.error === 'audio-capture') {
-              wantsRec = false;
-              setStatus('No microphone found on this device.', true);
-              finishUI();
-            }
-          };
-          r.onend = function () {
-            if (wantsRec) {
-              if (optContinuous) {
-                if (!gotResult) emptyRestarts++; else emptyRestarts = 0;
-                if (emptyRestarts >= 5) {
-                  /* Several restarts in a row produced no words at all —
-                     the service is not really connected. Give up loudly
-                     instead of looping silently with a moving waveform. */
-                  wantsRec = false;
-                  finishUI();
-                  liveText.textContent = '—';
-                  setStatus('Stopped — the speech service gave no results after several tries. Check your internet connection and microphone, then tap the mic again.', true);
-                  return;
-                }
-                gotResult = false;
-                baseText = editor.value;
-                sessionFinal = '';
-                restartTimer = setTimeout(function () {
-                  if (wantsRec) { try { recog = createRecog(); recog.start(); } catch (err) {} }
-                }, 300);
-              } else {
-                wantsRec = false;
-                finalize();
-              }
-            }
-          };
-          return r;
-        }
-        function startDictation() {
-          if (!supported) return;
-          if (wantsRec) return;
-          baseText = editor.value;
-          sessionFinal = '';
-          gotResult = false;
-          emptyRestarts = 0;
-          wantsRec = true;
-          try {
-            recog = createRecog();
-            recog.start();
-          } catch (err) {
-            wantsRec = false;
-            setStatus('Could not start the microphone. Try again in a moment.', true);
-            return;
-          }
-          micBtn.classList.add('recording');
-          micBtn.setAttribute('aria-label', 'Stop dictation');
-          micLabel.textContent = 'Tap to stop';
-          statusEl.classList.add('live');
-          setStatus('Listening… speak now. Your words will appear in the editor as you talk.', false);
-          liveText.textContent = '…';
-          startWave();
-          startTimer();
-        }
-        function finalize() {
-          finishUI();
-          if (optClean && editor.value.trim()) {
-            lastSnapshot = editor.value;
-            editor.value = tidyText(editor.value);
-            updateCounts();
-          }
-          liveText.textContent = '—';
-          setStatus('Stopped. Your text is in the editor — clean it up, copy it, or download it as a file.', false);
-        }
-        function finishUI() {
-          micBtn.classList.remove('recording');
-          micBtn.setAttribute('aria-label', 'Start dictation');
-          micLabel.textContent = 'Tap to speak';
-          statusEl.classList.remove('live');
-          stopWave();
-          stopTimer();
-        }
-        function stopDictation() {
-          wantsRec = false;
-          if (restartTimer) { clearTimeout(restartTimer); restartTimer = null; }
-          if (recog) { try { recog.stop(); } catch (e) {} }
-          finalize();
-        }
-        micBtn.addEventListener('click', function () {
-          if (wantsRec) stopDictation(); else startDictation();
-        });
-        updateCounts();
-      })();
-    </script>
-  </body>
+function loadState(){
+  try {
+    var raw = localStorage.getItem(LS_KEY);
+    if (raw) {
+      var parsed = JSON.parse(raw);
+      if (parsed && parsed.header && parsed.sections) return parsed;
+    }
+  } catch(e){ /* storage unavailable — fall through to sample */ }
+  return deepCopy(SAMPLE);
+}
+var saveTimer = null;
+function saveState(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(function(){
+    try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e){ /* ignore */ }
+  }, 250);
+}
+
+/* ---------- Small helpers ---------- */
+function $(id){ return document.getElementById(id); }
+function esc(s){
+  return String(s == null ? "" : s)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;");
+}
+/* Bold the lead-in before the first colon, as in the reference layout ("Clinical Skills: …"). */
+function boldLead(text){
+  var i = text.indexOf(":");
+  if (i > 0 && i <= 42) {
+    return "<strong>" + esc(text.slice(0, i + 1)) + "</strong>" + esc(text.slice(i + 1));
+  }
+  return esc(text);
+}
+function showMsg(id, text, kind){
+  var el = $(id); if (!el) return;
+  el.textContent = text || "";
+  el.className = "msg" + (text ? " show " + (kind || "warn") : "");
+  if (text) { setTimeout(function(){ el.className = "msg"; }, 6000); }
+}
+function contactLine(h){
+  var parts = [h.phone, h.email, h.city, h.linkedin];
+  var lic = (h.license || "").trim();
+  if (lic) parts.push("RN Lic. " + lic);
+  return parts.filter(function(p){ return (p || "").trim(); }).join("  •  ");
+}
+function fullName(h){
+  var n = (h.name || "").trim();
+  var c = (h.credentials || "").trim();
+  return c ? n + ", " + c : n;
+}
+
+/* =====================================================================
+   RESUME — editor
+   ===================================================================== */
+function emptyEntry(){ return { heading:"", right:"", line1:"", line2:"", bullets:[""] }; }
+
+function renderSectionsEditor(){
+  var host = $("sections-editor");
+  host.innerHTML = "";
+  state.sections.forEach(function(sec, idx){
+    var card = document.createElement("div");
+    card.className = "sec-card";
+
+    /* Header row: title + move / visibility / delete controls */
+    var head = document.createElement("div");
+    head.className = "sec-head";
+    head.innerHTML =
+      '<input type="text" class="sec-title-input" value="' + esc(sec.title) + '" aria-label="Section title" data-act="title">' +
+      '<button type="button" class="icon-btn" data-act="up" aria-label="Move section up" title="Move up">↑</button>' +
+      '<button type="button" class="icon-btn" data-act="down" aria-label="Move section down" title="Move down">↓</button>' +
+      '<button type="button" class="icon-btn" data-act="toggle" aria-pressed="' + (sec.visible ? "true" : "false") + '" aria-label="Show or hide section" title="Show / hide">' + (sec.visible ? "👁" : "—") + '</button>' +
+      '<button type="button" class="icon-btn" data-act="delete" aria-label="Delete section" title="Delete section">✕</button>';
+    card.appendChild(head);
+
+    var body = document.createElement("div");
+    body.className = "sec-body" + (sec.visible ? "" : " is-hidden");
+
+    if (sec.kind === "summary") {
+      body.innerHTML =
+        '<label>Heading for this section</label>' +
+        '<div class="btn-row" role="group" aria-label="Summary heading choice">' +
+          '<button type="button" class="btn small ' + (sec.headingChoice !== "Objective" ? "" : "secondary") + '" data-act="sum-prof">Professional Summary</button>' +
+          '<button type="button" class="btn small ' + (sec.headingChoice === "Objective" ? "" : "secondary") + '" data-act="sum-obj">Objective</button>' +
+        '</div>' +
+        '<label>Summary text</label>' +
+        '<textarea rows="5" data-act="sum-text">' + esc(sec.text || "") + '</textarea>';
+    } else if (sec.kind === "bullets") {
+      body.appendChild(bulletsEditor(sec, null));
+      var addB = document.createElement("div");
+      addB.className = "btn-row";
+      addB.innerHTML = '<button type="button" class="btn secondary small" data-act="add-bullet">+ Add line</button>';
+      body.appendChild(addB);
+    } else { /* entries */
+      (sec.entries || []).forEach(function(entry, eIdx){
+        body.appendChild(entryEditor(sec, entry, eIdx));
+      });
+      var addE = document.createElement("div");
+      addE.className = "btn-row";
+      addE.innerHTML = '<button type="button" class="btn secondary small" data-act="add-entry">+ Add entry</button>';
+      body.appendChild(addE);
+    }
+
+    card.appendChild(body);
+    wireSectionCard(card, sec, idx);
+    host.appendChild(card);
+  });
+}
+
+function bulletsEditor(sec, entry){
+  var wrap = document.createElement("div");
+  var list = entry ? entry.bullets : sec.bullets;
+  (list || []).forEach(function(b, bIdx){
+    var row = document.createElement("div");
+    row.className = "bullet-row";
+    row.innerHTML =
+      '<textarea rows="2" data-bullet="' + bIdx + '" aria-label="Bullet text">' + esc(b) + '</textarea>' +
+      '<button type="button" class="icon-btn" data-del-bullet="' + bIdx + '" aria-label="Remove bullet">✕</button>';
+    wrap.appendChild(row);
+  });
+  return wrap;
+}
+
+function entryEditor(sec, entry, eIdx){
+  var box = document.createElement("div");
+  box.className = "entry-box";
+  box.setAttribute("data-entry", eIdx);
+  box.innerHTML =
+    '<div class="entry-top"><span>Entry ' + (eIdx + 1) + '</span>' +
+    '<button type="button" class="icon-btn" data-act="del-entry" aria-label="Remove entry">✕</button></div>' +
+    '<div class="grid">' +
+      '<div class="full"><label>Heading (role / qualification — place — city)</label>' +
+      '<input type="text" data-field="heading" value="' + esc(entry.heading) + '"></div>' +
+      '<div><label>Right-side text (e.g. Active | Exp. 05/2027)</label>' +
+      '<input type="text" data-field="right" value="' + esc(entry.right) + '"></div>' +
+      '<div><label>Dates line</label>' +
+      '<input type="text" data-field="line1" value="' + esc(entry.line1) + '" placeholder="Jan 2024 – May 2024"></div>' +
+      '<div class="full"><label>Detail line (unit, department, note)</label>' +
+      '<input type="text" data-field="line2" value="' + esc(entry.line2) + '"></div>' +
+    '</div>' +
+    '<h3 style="margin-top:10px">Bullets</h3>';
+  box.appendChild(bulletsEditor(sec, entry));
+  var addB = document.createElement("div");
+  addB.className = "btn-row";
+  addB.innerHTML = '<button type="button" class="btn secondary small" data-act="add-entry-bullet">+ Add bullet</button>';
+  box.appendChild(addB);
+  return box;
+}
+
+/* Wire one section card's controls and inputs to the state. */
+function wireSectionCard(card, sec, idx){
+  card.addEventListener("click", function(ev){
+    var btn = ev.target.closest("[data-act],[data-del-bullet]");
+    if (!btn) return;
+    var act = btn.getAttribute("data-act");
+    var delB = btn.getAttribute("data-del-bullet");
+
+    if (delB !== null && delB !== undefined && btn.hasAttribute("data-del-bullet")) {
+      var box = btn.closest(".entry-box");
+      var list = box ? sec.entries[+box.getAttribute("data-entry")].bullets : sec.bullets;
+      list.splice(+delB, 1);
+      refresh(); return;
+    }
+    switch (act) {
+      case "up":
+        if (idx > 0) { state.sections.splice(idx, 1); state.sections.splice(idx - 1, 0, sec); }
+        refresh(); break;
+      case "down":
+        if (idx < state.sections.length - 1) { state.sections.splice(idx, 1); state.sections.splice(idx + 1, 0, sec); }
+        refresh(); break;
+      case "toggle": sec.visible = !sec.visible; refresh(); break;
+      case "delete":
+        state.sections.splice(idx, 1); refresh(); break;
+      case "sum-prof": sec.headingChoice = "Professional Summary"; sec.title = "Professional Summary"; refresh(); break;
+      case "sum-obj": sec.headingChoice = "Objective"; sec.title = "Objective"; refresh(); break;
+      case "add-bullet": sec.bullets.push(""); refresh(); break;
+      case "add-entry": sec.entries.push(emptyEntry()); refresh(); break;
+      case "add-entry-bullet": {
+        var eBox = btn.closest(".entry-box");
+        sec.entries[+eBox.getAttribute("data-entry")].bullets.push("");
+        refresh(); break;
+      }
+      case "del-entry": {
+        var dBox = btn.closest(".entry-box");
+        sec.entries.splice(+dBox.getAttribute("data-entry"), 1);
+        refresh(); break;
+      }
+    }
+  });
+
+  card.addEventListener("input", function(ev){
+    var t = ev.target;
+    if (t.hasAttribute("data-act") && t.getAttribute("data-act") === "title") {
+      sec.title = t.value;
+      if (sec.kind === "summary") sec.headingChoice = t.value;
+      renderResumePreview(); saveState(); return;
+    }
+    if (t.hasAttribute("data-act") && t.getAttribute("data-act") === "sum-text") {
+      sec.text = t.value; renderResumePreview(); saveState(); return;
+    }
+    if (t.hasAttribute("data-bullet")) {
+      var box = t.closest(".entry-box");
+      var list = box ? sec.entries[+box.getAttribute("data-entry")].bullets : sec.bullets;
+      list[+t.getAttribute("data-bullet")] = t.value;
+      renderResumePreview(); saveState(); return;
+    }
+    if (t.hasAttribute("data-field")) {
+      var fBox = t.closest(".entry-box");
+      sec.entries[+fBox.getAttribute("data-entry")][t.getAttribute("data-field")] = t.value;
+      renderResumePreview(); saveState(); return;
+    }
+  });
+}
+
+/* =====================================================================
+   RESUME — preview (Jane Carter layout)
+   ===================================================================== */
+function headerHTML(h){
+  return '<p class="p-name">' + esc(fullName(h)) + '</p>' +
+    (h.title ? '<p class="p-title">' + esc(h.title) + '</p>' : '') +
+    '<p class="p-contact">' + esc(contactLine(h)) + '</p>';
+}
+function bulletsHTML(list){
+  var items = (list || []).filter(function(b){ return (b || "").trim(); });
+  if (!items.length) return "";
+  return "<ul>" + items.map(function(b){ return "<li>" + boldLead(b) + "</li>"; }).join("") + "</ul>";
+}
+function renderResumePreview(){
+  var h = state.header;
+  var html = headerHTML(h);
+  state.sections.forEach(function(sec){
+    if (!sec.visible) return;
+    var title = sec.kind === "summary" ? (sec.headingChoice || sec.title) : sec.title;
+    html += '<h2 class="p-sec">' + esc(title) + "</h2>";
+    if (sec.kind === "summary") {
+      if ((sec.text || "").trim()) html += "<p>" + esc(sec.text) + "</p>";
+    } else if (sec.kind === "bullets") {
+      html += bulletsHTML(sec.bullets);
+    } else {
+      (sec.entries || []).forEach(function(e){
+        var has = (e.heading || "").trim() || (e.line1 || "").trim() || (e.line2 || "").trim() ||
+                  (e.bullets || []).some(function(b){ return (b || "").trim(); });
+        if (!has) return;
+        html += '<div class="p-entry"><div class="p-entry-head">' +
+          '<span class="p-entry-title">' + esc(e.heading) + "</span>" +
+          (e.right ? '<span class="p-entry-right">' + esc(e.right) + "</span>" : "") +
+          "</div>" +
+          (e.line1 ? '<div class="p-line">' + esc(e.line1) + "</div>" : "") +
+          (e.line2 ? '<div class="p-line2">' + esc(e.line2) + "</div>" : "") +
+          bulletsHTML(e.bullets) +
+          "</div>";
+      });
+    }
+  });
+  $("resume-preview").innerHTML = html;
+}
+
+/* ---------- Add-section chips + custom section ---------- */
+function renderAddChips(){
+  var host = $("add-section-chips");
+  host.innerHTML = "";
+  OPTIONAL_SECTIONS.forEach(function(opt){
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "chip"; b.textContent = "+ " + opt.title;
+    b.addEventListener("click", function(){
+      var sec = { id: nextId(opt.key), kind: opt.kind, title: opt.title, visible: true };
+      if (opt.kind === "entries") sec.entries = [emptyEntry()];
+      else sec.bullets = [""];
+      state.sections.push(sec);
+      refresh();
+    });
+    host.appendChild(b);
+  });
+}
+
+/* =====================================================================
+   COVER LETTER
+   ===================================================================== */
+function fmtDate(iso){
+  if (!iso) return "";
+  var d = new Date(iso + "T00:00:00");
+  if (isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+}
+function renderCoverPreview(){
+  var h = state.header, c = state.cover;
+  var senderContact = (c.senderContact || "").trim() || contactLine(h);
+  var greetingName = (c.manager || "").trim();
+  var html = headerHTML(h);
+  html += '<div class="p-letter" style="margin-top:18px">';
+  if (senderContact) html += "<p>" + esc(senderContact) + "</p>";
+  if (c.date) html += "<p>" + esc(fmtDate(c.date)) + "</p>";
+  var recip = [];
+  if (greetingName) recip.push(greetingName);
+  if ((c.facility || "").trim()) recip.push(c.facility.trim());
+  if ((c.facilityCity || "").trim()) recip.push(c.facilityCity.trim());
+  if (recip.length) html += "<p>" + recip.map(esc).join("<br>") + "</p>";
+  html += "<p>Dear " + esc(greetingName || "Hiring Manager") + ",</p>";
+  [c.opening, c.body1, c.body2, c.closing].forEach(function(p){
+    if ((p || "").trim()) html += "<p>" + esc(p) + "</p>";
+  });
+  html += "<p>" + esc(c.signoff || "Sincerely,") + "<br>" + esc(fullName(h)) + "</p>";
+  html += "</div>";
+  $("cover-preview").innerHTML = html;
+}
+
+/* Assemble a draft from the buyer's own details (resume summary, skills, experience). */
+function generateDraft(){
+  var h = state.header, c = state.cover;
+  var job = (c.jobTitle || "").trim() || "Registered Nurse";
+  var fac = (c.facility || "").trim();
+  var name = (h.name || "").trim();
+  var creds = (h.credentials || "").trim();
+  var summarySec = null, skillsSec = null, expSec = null;
+  state.sections.forEach(function(s){
+    if (s.kind === "summary") summarySec = s;
+    if (s.id === "skills" || /skills/i.test(s.title)) skillsSec = s;
+    if (s.id === "experience" || /experience/i.test(s.title)) expSec = s;
+  });
+  c.opening = "I am writing to apply for the " + job + " position" +
+    (fac ? " at " + fac : "") +
+    ". I am " + (name ? name : "a registered nurse") + (creds ? ", " + creds : "") +
+    ", and I would welcome the opportunity to bring my clinical training and patient-centered approach to your team.";
+  var body1 = "";
+  if (summarySec && (summarySec.text || "").trim()) body1 = summarySec.text.trim();
+  if (expSec && expSec.entries && expSec.entries.length) {
+    var first = expSec.entries[0];
+    var bits = [];
+    if ((first.heading || "").trim()) bits.push("Most recently, I completed experience as " + first.heading.trim() + (first.line1 ? " (" + first.line1.trim() + ")" : "") + ".");
+    var fb = (first.bullets || []).filter(function(b){ return (b || "").trim(); }).slice(0, 2);
+    fb.forEach(function(b){ bits.push(b.trim()); });
+    if (bits.length) body1 = (body1 ? body1 + " " : "") + bits.join(" ");
+  }
+  c.body1 = body1 || "Please see my resume for details of my clinical training and experience.";
+  var body2 = "";
+  if (skillsSec) {
+    var lines = (skillsSec.bullets || []).filter(function(b){ return (b || "").trim(); });
+    if (lines.length) body2 = "My core strengths include the following. " + lines.join(" ");
+  }
+  body2 += (body2 ? " " : "") + "I hold the licenses and certifications listed on my resume and am committed to safe, evidence-based, patient-centered care.";
+  c.body2 = body2;
+  c.closing = "Thank you for your time and consideration. I would welcome the chance to discuss how my training and skills fit the " + job + " role" +
+    (fac ? " at " + fac : "") + ". I can be reached at " +
+    ([h.phone, h.email].filter(function(x){ return (x || "").trim(); }).join(" or ") || "the contact details above") + ".";
+  syncCoverForm();
+  renderCoverPreview(); saveState();
+  showMsg("msg-cover", "Draft generated — edit any paragraph to make it your own.", "ok");
+}
+function syncCoverForm(){
+  document.querySelectorAll("[data-cover]").forEach(function(el){
+    el.value = state.cover[el.getAttribute("data-cover")] || "";
+  });
+}
+
+/* =====================================================================
+   REFERENCES
+   ===================================================================== */
+function renderRefsEditor(){
+  var host = $("refs-editor");
+  host.innerHTML = "";
+  state.references.forEach(function(ref, i){
+    var box = document.createElement("div");
+    box.className = "entry-box";
+    box.innerHTML =
+      '<div class="entry-top"><span>Reference ' + (i + 1) + '</span>' +
+      '<button type="button" class="icon-btn" data-del-ref="' + i + '" aria-label="Remove reference">✕</button></div>' +
+      '<div class="grid">' +
+        '<div><label>Full name</label><input type="text" data-ref="' + i + '" data-rfield="name" value="' + esc(ref.name) + '"></div>' +
+        '<div><label>Title / role</label><input type="text" data-ref="' + i + '" data-rfield="title" value="' + esc(ref.title) + '" placeholder="Clinical Instructor, RN, MSN"></div>' +
+        '<div><label>Facility / organisation</label><input type="text" data-ref="' + i + '" data-rfield="facility" value="' + esc(ref.facility) + '"></div>' +
+        '<div><label>Phone</label><input type="tel" data-ref="' + i + '" data-rfield="phone" value="' + esc(ref.phone) + '"></div>' +
+        '<div><label>Email</label><input type="email" data-ref="' + i + '" data-rfield="email" value="' + esc(ref.email) + '"></div>' +
+      "</div>";
+    host.appendChild(box);
+  });
+}
+function renderRefsPreview(){
+  var h = state.header;
+  var html = headerHTML(h);
+  html += '<h2 class="p-sec">Professional References</h2>';
+  var any = false;
+  state.references.forEach(function(ref){
+    var has = [ref.name, ref.title, ref.facility, ref.phone, ref.email].some(function(v){ return (v || "").trim(); });
+    if (!has) return;
+    any = true;
+    var line2 = [ref.title, ref.facility].filter(function(v){ return (v || "").trim(); }).join(" — ");
+    var line3 = [ref.phone, ref.email].filter(function(v){ return (v || "").trim(); }).join("  •  ");
+    html += '<div class="p-ref"><div class="p-ref-name">' + esc(ref.name) + "</div>" +
+      (line2 ? "<div>" + esc(line2) + "</div>" : "") +
+      (line3 ? "<div>" + esc(line3) + "</div>" : "") + "</div>";
+  });
+  if (!any) html += '<p style="color:#555">References available upon request.</p>';
+  $("refs-preview").innerHTML = html;
+}
+
+/* =====================================================================
+   JOBS — best-effort feed from the HireSparkStudio job board.
+   If the fetch fails (offline etc.), show the link and a short note —
+   never an error message as content.
+   ===================================================================== */
+var jobsLoaded = false;
+function loadJobs(){
+  if (jobsLoaded) return;
+  jobsLoaded = true;
+  var host = $("job-feed");
+  var BOARD = "https://irfanhiresparkstudio.github.io/";
+  if (!window.fetch) { jobsFallback(host, BOARD); return; }
+  fetch(BOARD).then(function(res){
+    if (!res.ok) throw new Error("bad response");
+    return res.text();
+  }).then(function(htmlText){
+    var doc = new DOMParser().parseFromString(htmlText, "text/html");
+    var seen = {}, items = [];
+    doc.querySelectorAll("a[href]").forEach(function(a){
+      var href = a.getAttribute("href") || "";
+      var text = (a.textContent || "").trim().replace(/\s+/g, " ");
+      if (!text || text.length < 8) return;
+      if (/^#/.test(href) || /^mailto:/i.test(href)) return;
+      var url;
+      try { url = new URL(href, BOARD).href; } catch(e){ return; }
+      if (url === BOARD || seen[url]) return;
+      /* Keep internal pages that look like job posts or listings. */
+      if (url.indexOf(BOARD) !== 0) return;
+      seen[url] = true;
+      items.push({ title: text, url: url });
+    });
+    if (!items.length) { jobsFallback(host, BOARD); return; }
+    host.innerHTML = items.slice(0, 15).map(function(it){
+      return '<div class="job-feed-item"><a href="' + esc(it.url) + '" target="_blank" rel="noopener">' + esc(it.title) + "</a></div>";
+    }).join("");
+  }).catch(function(){ jobsFallback(host, BOARD); });
+}
+function jobsFallback(host, board){
+  host.innerHTML = '<p class="hint">The latest posts could not be loaded here. ' +
+    '<a href="' + board + '" target="_blank" rel="noopener">Open the job board</a> to see the newest verified nurse jobs.</p>';
+}
+
+/* =====================================================================
+   ONE-PAGE FIT + WATERMARK (downloads only — never on screen)
+   - Print/PDF: before printing, the active document is measured at the
+     real printable width (Letter 8.5x11in minus .6in margins = 7.3x9.8in)
+     and shrunk just enough to fit exactly one page; restored afterwards.
+   - Word (.docx): the same fit scale shrinks the Word font sizes, and a
+     "HireSparkStudio" watermark image is placed centred on the page,
+     behind the text, via the section header (repeats on every page).
+   - Print/PDF watermark: a centred .paper::after (see the print CSS).
+   ===================================================================== */
+var PRINT_W_IN = 7.3, PRINT_H_IN = 9.8; /* Letter minus .6in margins */
+var dxScale = 1; /* Word font-size scale, set fresh by each export */
+function sz(n){ return Math.max(12, Math.round(n * dxScale)); }
+function activePaper(){
+  var panel = document.querySelector(".tab-panel.active");
+  return panel ? panel.querySelector(".paper") : null;
+}
+function fitScaleFor(paper){
+  if (!paper) return 1;
+  var prevW = paper.style.width, prevP = paper.style.padding;
+  paper.style.width = PRINT_W_IN + "in";
+  paper.style.padding = "0";
+  var hPx = paper.scrollHeight;
+  paper.style.width = prevW;
+  paper.style.padding = prevP;
+  var s = (PRINT_H_IN * 96) / hPx;
+  return s >= 1 ? 1 : s;
+}
+function applyPrintFit(){
+  var paper = activePaper();
+  if (!paper) return;
+  var prevW = paper.style.width, prevP = paper.style.padding;
+  paper.style.width = PRINT_W_IN + "in";
+  paper.style.padding = "0";
+  var hPx = paper.scrollHeight;
+  var s = (PRINT_H_IN * 96) / hPx;
+  if (s < 1) {
+    paper.style.transform = "scale(" + s + ")";
+    paper.style.transformOrigin = "top left";
+    paper.style.height = Math.ceil(hPx * s) + "px";
+    paper.style.overflow = "hidden";
+  } else {
+    paper.style.width = prevW;
+    paper.style.padding = prevP;
+  }
+}
+function clearPrintFit(){
+  var paper = activePaper();
+  if (!paper) return;
+  paper.style.width = ""; paper.style.padding = "";
+  paper.style.transform = ""; paper.style.transformOrigin = "";
+  paper.style.height = ""; paper.style.overflow = "";
+}
+window.addEventListener("beforeprint", applyPrintFit);
+window.addEventListener("afterprint", clearPrintFit);
+
+/* Watermark image: "HireSparkStudio", light navy, diagonal, transparent PNG. */
+var WM_TEXT = "HireSparkStudio";
+var wmImagePromise = null;
+function watermarkImageData(){
+  if (wmImagePromise) return wmImagePromise;
+  wmImagePromise = new Promise(function(resolve){
+    try {
+      var c = document.createElement("canvas");
+      c.width = 1400; c.height = 700;
+      var x = c.getContext("2d");
+      if (!x) { resolve(null); return; }
+      x.clearRect(0, 0, c.width, c.height);
+      x.translate(c.width / 2, c.height / 2);
+      x.rotate(-30 * Math.PI / 180);
+      x.font = "700 92px Georgia, 'Times New Roman', serif";
+      x.textAlign = "center"; x.textBaseline = "middle";
+      x.fillStyle = "rgba(31,56,100,0.10)";
+      x.fillText(WM_TEXT, 0, 0);
+      if (c.toBlob) {
+        c.toBlob(function(b){
+          if (!b || !b.arrayBuffer) { resolve(null); return; }
+          b.arrayBuffer().then(function(ab){ resolve(ab); }, function(){ resolve(null); });
+        }, "image/png");
+      } else { resolve(null); }
+    } catch (e) { resolve(null); }
+  });
+  return wmImagePromise;
+}
+function watermarkHeader(buf){
+  var D = window.docx;
+  var W = 600, H = 300, EMU = 9525; /* image size in px @96dpi -> EMU */
+  var pageW = 12240 * 635, pageH = 15840 * 635; /* Letter size in twips -> EMU */
+  var offX = Math.round((pageW - W * EMU) / 2);
+  var offY = Math.round((pageH - H * EMU) / 2);
+  return new D.Header({ children: [ new D.Paragraph({ children: [ new D.ImageRun({
+    data: buf,
+    transformation: { width: W, height: H },
+    floating: {
+      horizontalPosition: { relative: D.HorizontalPositionRelativeFrom.PAGE, offset: offX },
+      verticalPosition: { relative: D.VerticalPositionRelativeFrom.PAGE, offset: offY },
+      allowOverlap: true,
+      behindDocument: true
+    } }) ] }) ] });
+}
+
+/* =====================================================================
+   WORD (.docx) EXPORT — uses the `docx` CDN library.
+   Offline / library missing -> clear message; PDF still works offline.
+   ===================================================================== */
+function docxReady(){ return typeof window.docx !== "undefined" && window.docx && window.docx.Document; }
+function wordFail(msgId){
+  showMsg(msgId, "Word download needs internet — PDF works offline. Connect to the internet and tap the Word button again.", "warn");
+}
+function saveBlob(blob, filename){
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 400);
+}
+function fileBase(name, suffix){
+  var base = (name || "Nurse").trim().replace(/[^\w\- ]+/g, "").trim().replace(/\s+/g, "-") || "Nurse";
+  return base + "-" + suffix + ".docx";
+}
+/* Shared docx paragraph builders (navy #1F3864 headings, centered header). */
+function dxHeaderParas(h){
+  var D = window.docx;
+  var paras = [];
+  paras.push(new D.Paragraph({
+    alignment: D.AlignmentType.CENTER,
+    children: [new D.TextRun({ text: fullName(h).toUpperCase(), bold: true, size: sz(36), color: "1F3864" })]
+  }));
+  if ((h.title || "").trim()) paras.push(new D.Paragraph({
+    alignment: D.AlignmentType.CENTER,
+    children: [new D.TextRun({ text: h.title.toUpperCase(), bold: true, size: sz(21), color: "1F3864" })]
+  }));
+  paras.push(new D.Paragraph({
+    alignment: D.AlignmentType.CENTER,
+    children: [new D.TextRun({ text: contactLine(h), size: sz(20) })]
+  }));
+  return paras;
+}
+function dxSectionTitle(title){
+  var D = window.docx;
+  return new D.Paragraph({
+    spacing: { before: Math.round(240 * dxScale), after: Math.round(100 * dxScale) },
+    border: { bottom: { color: "1F3864", space: 2, style: D.BorderStyle.SINGLE, size: 10 } },
+    children: [new D.TextRun({ text: title.toUpperCase(), bold: true, size: sz(23), color: "1F3864" })]
+  });
+}
+function dxBullet(text){
+  var D = window.docx;
+  var i = text.indexOf(":");
+  var runs;
+  if (i > 0 && i <= 42) {
+    runs = [new D.TextRun({ text: text.slice(0, i + 1), bold: true, size: sz(21) }),
+            new D.TextRun({ text: text.slice(i + 1), size: sz(21) })];
+  } else {
+    runs = [new D.TextRun({ text: text, size: sz(21) })];
+  }
+  return new D.Paragraph({ bullet: { level: 0 }, children: runs });
+}
+function dxDoc(paras, wmBuf){
+  var D = window.docx;
+  var section = {
+    properties: { page: { size: { width: 12240, height: 15840 },
+      margin: { top: 864, bottom: 864, left: 1008, right: 1008 } } },
+    children: paras
+  };
+  if (wmBuf) section.headers = { default: watermarkHeader(wmBuf) };
+  return new D.Document({ sections: [section] });
+}
+async function exportResumeDocx(){
+  if (!docxReady()) { wordFail("msg-resume"); return; }
+  var D = window.docx, h = state.header;
+  dxScale = fitScaleFor($("resume-preview"));
+  var wmBuf = await watermarkImageData();
+  var paras = dxHeaderParas(h);
+  state.sections.forEach(function(sec){
+    if (!sec.visible) return;
+    var title = sec.kind === "summary" ? (sec.headingChoice || sec.title) : sec.title;
+    paras.push(dxSectionTitle(title || ""));
+    if (sec.kind === "summary") {
+      if ((sec.text || "").trim()) paras.push(new D.Paragraph({ children: [new D.TextRun({ text: sec.text, size: sz(21) })] }));
+    } else if (sec.kind === "bullets") {
+      (sec.bullets || []).forEach(function(b){ if ((b || "").trim()) paras.push(dxBullet(b)); });
+    } else {
+      (sec.entries || []).forEach(function(e){
+        var headRuns = [new D.TextRun({ text: e.heading || "", bold: true, size: sz(21) })];
+        if ((e.right || "").trim()) headRuns.push(new D.TextRun({ text: "    " + e.right, italics: true, size: sz(20) }));
+        if ((e.heading || "").trim() || (e.right || "").trim()) paras.push(new D.Paragraph({ spacing: { before: Math.round(120 * dxScale) }, children: headRuns }));
+        if ((e.line1 || "").trim()) paras.push(new D.Paragraph({ children: [new D.TextRun({ text: e.line1, size: sz(21) })] }));
+        if ((e.line2 || "").trim()) paras.push(new D.Paragraph({ children: [new D.TextRun({ text: e.line2, italics: true, size: sz(21) })] }));
+        (e.bullets || []).forEach(function(b){ if ((b || "").trim()) paras.push(dxBullet(b)); });
+      });
+    }
+  });
+  D.Packer.toBlob(dxDoc(paras, wmBuf)).then(function(blob){
+    saveBlob(blob, fileBase(h.name, "Resume"));
+    showMsg("msg-resume", "Word file downloaded. Tip: drag the .docx into Google Drive to open it in Google Docs.", "ok");
+  }).catch(function(){ wordFail("msg-resume"); });
+}
+async function exportCoverDocx(){
+  if (!docxReady()) { wordFail("msg-cover"); return; }
+  var D = window.docx, h = state.header, c = state.cover;
+  dxScale = fitScaleFor($("cover-preview"));
+  var wmBuf = await watermarkImageData();
+  var paras = dxHeaderParas(h);
+  var senderContact = (c.senderContact || "").trim() || contactLine(h);
+  function p(text){ return new D.Paragraph({ spacing: { after: Math.round(160 * dxScale) }, children: [new D.TextRun({ text: text, size: sz(22) })] }); }
+  if (senderContact) paras.push(p(senderContact));
+  if (c.date) paras.push(p(fmtDate(c.date)));
+  var recip = [];
+  if ((c.manager || "").trim()) recip.push(c.manager.trim());
+  if ((c.facility || "").trim()) recip.push(c.facility.trim());
+  if ((c.facilityCity || "").trim()) recip.push(c.facilityCity.trim());
+  recip.forEach(function(r){ paras.push(new D.Paragraph({ children: [new D.TextRun({ text: r, size: sz(22) })] })); });
+  paras.push(p("Dear " + ((c.manager || "").trim() || "Hiring Manager") + ","));
+  [c.opening, c.body1, c.body2, c.closing].forEach(function(t){ if ((t || "").trim()) paras.push(p(t)); });
+  paras.push(new D.Paragraph({ children: [new D.TextRun({ text: c.signoff || "Sincerely,", size: sz(22) })] }));
+  paras.push(new D.Paragraph({ children: [new D.TextRun({ text: fullName(h), size: sz(22) })] }));
+  D.Packer.toBlob(dxDoc(paras, wmBuf)).then(function(blob){
+    saveBlob(blob, fileBase(h.name, "Cover-Letter"));
+    showMsg("msg-cover", "Word file downloaded.", "ok");
+  }).catch(function(){ wordFail("msg-cover"); });
+}
+async function exportRefsDocx(){
+  if (!docxReady()) { wordFail("msg-refs"); return; }
+  var D = window.docx, h = state.header;
+  dxScale = fitScaleFor($("refs-preview"));
+  var wmBuf = await watermarkImageData();
+  var paras = dxHeaderParas(h);
+  paras.push(dxSectionTitle("Professional References"));
+  var any = false;
+  state.references.forEach(function(ref){
+    var has = [ref.name, ref.title, ref.facility, ref.phone, ref.email].some(function(v){ return (v || "").trim(); });
+    if (!has) return;
+    any = true;
+    paras.push(new D.Paragraph({ spacing: { before: Math.round(140 * dxScale) }, children: [new D.TextRun({ text: ref.name || "", bold: true, size: sz(22), color: "1F3864" })] }));
+    var line2 = [ref.title, ref.facility].filter(function(v){ return (v || "").trim(); }).join(" — ");
+    var line3 = [ref.phone, ref.email].filter(function(v){ return (v || "").trim(); }).join("  •  ");
+    if (line2) paras.push(new D.Paragraph({ children: [new D.TextRun({ text: line2, size: sz(21) })] }));
+    if (line3) paras.push(new D.Paragraph({ children: [new D.TextRun({ text: line3, size: sz(21) })] }));
+  });
+  if (!any) paras.push(new D.Paragraph({ children: [new D.TextRun({ text: "References available upon request.", size: sz(21) })] }));
+  D.Packer.toBlob(dxDoc(paras, wmBuf)).then(function(blob){
+    saveBlob(blob, fileBase(h.name, "References"));
+    showMsg("msg-refs", "Word file downloaded.", "ok");
+  }).catch(function(){ wordFail("msg-refs"); });
+}
+
+/* =====================================================================
+   WIRING
+   ===================================================================== */
+function refresh(){
+  renderSectionsEditor();
+  renderResumePreview();
+  renderCoverPreview();
+  renderRefsEditor();
+  renderRefsPreview();
+  saveState();
+}
+function syncHeaderForm(){
+  document.querySelectorAll("[data-header]").forEach(function(el){
+    el.value = state.header[el.getAttribute("data-header")] || "";
+  });
+}
+function bindStaticInputs(){
+  document.querySelectorAll("[data-header]").forEach(function(el){
+    el.addEventListener("input", function(){
+      state.header[el.getAttribute("data-header")] = el.value;
+      renderResumePreview(); renderCoverPreview(); renderRefsPreview(); saveState();
+    });
+  });
+  document.querySelectorAll("[data-cover]").forEach(function(el){
+    el.addEventListener("input", function(){
+      state.cover[el.getAttribute("data-cover")] = el.value;
+      renderCoverPreview(); saveState();
+    });
+  });
+  $("refs-editor").addEventListener("input", function(ev){
+    var t = ev.target;
+    if (t.hasAttribute("data-ref")) {
+      state.references[+t.getAttribute("data-ref")][t.getAttribute("data-rfield")] = t.value;
+      renderRefsPreview(); saveState();
+    }
+  });
+  $("refs-editor").addEventListener("click", function(ev){
+    var b = ev.target.closest("[data-del-ref]");
+    if (!b) return;
+    state.references.splice(+b.getAttribute("data-del-ref"), 1);
+    renderRefsEditor(); renderRefsPreview(); saveState();
+  });
+}
+
+/* Tabs */
+document.querySelectorAll(".tab-btn").forEach(function(btn){
+  btn.addEventListener("click", function(){
+    var tab = btn.getAttribute("data-tab");
+    document.querySelectorAll(".tab-btn").forEach(function(b){
+      b.setAttribute("aria-selected", b === btn ? "true" : "false");
+    });
+    document.querySelectorAll(".tab-panel").forEach(function(p){
+      p.classList.toggle("active", p.id === "panel-" + tab);
+    });
+    if (tab === "jobs") loadJobs();
+    window.scrollTo({ top: 0 });
+  });
+});
+
+/* Buttons */
+$("btn-pdf-resume").addEventListener("click", function(){ window.print(); });
+$("btn-pdf-cover").addEventListener("click", function(){ window.print(); });
+$("btn-pdf-refs").addEventListener("click", function(){ window.print(); });
+$("btn-docx-resume").addEventListener("click", exportResumeDocx);
+$("btn-docx-cover").addEventListener("click", exportCoverDocx);
+$("btn-docx-refs").addEventListener("click", exportRefsDocx);
+$("btn-generate").addEventListener("click", generateDraft);
+$("btn-add-ref").addEventListener("click", function(){
+  state.references.push({ name:"", title:"", facility:"", phone:"", email:"" });
+  renderRefsEditor(); renderRefsPreview(); saveState();
+});
+$("btn-custom").addEventListener("click", function(){
+  var title = $("custom-title").value.trim();
+  if (!title) { $("custom-title").focus(); return; }
+  state.sections.push({ id: nextId("custom"), kind: "entries", title: title, visible: true, entries: [emptyEntry()] });
+  $("custom-title").value = "";
+  refresh();
+});
+$("btn-sample").addEventListener("click", function(){
+  state = deepCopy(SAMPLE);
+  syncHeaderForm(); syncCoverForm(); refresh();
+  showMsg("msg-data", "Sample loaded — replace Jane Carter's details with your own.", "ok");
+});
+$("btn-clear").addEventListener("click", function(){
+  state.header = { name:"", credentials:"", title:"", phone:"", email:"", city:"", linkedin:"", license:"" };
+  state.sections = state.sections.map(function(sec){
+    var s = { id: sec.id, kind: sec.kind, title: sec.title, visible: true };
+    if (sec.kind === "summary") { s.headingChoice = "Professional Summary"; s.title = "Professional Summary"; s.text = ""; }
+    else if (sec.kind === "bullets") s.bullets = [""];
+    else s.entries = [emptyEntry()];
+    return s;
+  });
+  state.cover = { date:"", jobTitle:"", manager:"", facility:"", facilityCity:"", senderContact:"", opening:"", body1:"", body2:"", closing:"", signoff:"Sincerely," };
+  state.references = [ { name:"", title:"", facility:"", phone:"", email:"" },
+                       { name:"", title:"", facility:"", phone:"", email:"" },
+                       { name:"", title:"", facility:"", phone:"", email:"" } ];
+  syncHeaderForm(); syncCoverForm(); refresh();
+  showMsg("msg-data", "All fields cleared.", "ok");
+});
+
+/* ---------- Init ---------- */
+syncHeaderForm();
+syncCoverForm();
+renderAddChips();
+bindStaticInputs();
+refresh();
+})();
+</script>
+</body>
 </html>

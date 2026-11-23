@@ -1,13 +1,15 @@
 # HireSparkStudio Resume Builder
 
-Voice dictation app by Muhammad Irfan (HireSparkStudio) — speak, and your words are written down. Built for writing cover letters, letters of intent, motivational letters, statements of interest, proposals and manuscripts by dictation.
+Nurse Resume Builder by Muhammad Irfan (HireSparkStudio) — build a professional nursing resume in the browser, then download it as a clean PDF or an editable Word file.
 
 ## How it works
 
-- Open the page, pick a language (Urdu, English, Hindi, Punjabi, Arabic) and press the mic button.
-- Spoken words appear as text, with live preview, spoken punctuation, Undo, Copy and .txt / Word download.
-- Uses the browser's built-in speech recognition (Chrome / Edge), which needs an internet connection.
-- No account needed — a simple name-based preview screen opens the app.
+- Fill in your details and watch the live preview update as you type.
+- Tabs: Resume, Cover Letter, References, Jobs.
+- Sections can be reordered, hidden or deleted; entries save automatically on your device.
+- Downloads auto-fit to exactly one page, and carry a light "HireSparkStudio" watermark in the centre of the downloaded page only (never on screen).
+- Import an existing CV from a .docx or PDF file to fill the form automatically.
+- Jobs tab links to the HireSparkStudio job board and major nursing job portals.
 
 ## Live site
 
