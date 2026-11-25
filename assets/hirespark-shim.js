@@ -66,6 +66,11 @@
   ];
   var STATUS_RE = /((?:Active\s*\|\s*)?Exp\.\s*\d{2}\/\d{4}|Certified|Active)\s*$/i;
   var DATE_RANGE_RE = /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{4}\s*[–—-]\s*(?:(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{4}|Present|Current)\s*$/i;
+  // Bullet markers: the real "•" plus glyphs OCR and other parsers emit in
+  // its place ("+", "»", "«", "›", "-", "*"). A line starting with any of
+  // these is a bullet; the marker itself is never content.
+  var BULLET_MARKER_RE = /^[•\-*+»«›]\s*/;
+  var BULLET_MARKER_TEST = /^[•\-*+»«›]/;
 
   function isAllCapsHeading(line) {
     if (line.length < 3 || line.length > 80) return false;
@@ -176,7 +181,7 @@
       } else if (secKind === 'licenses') {
         var entries = [];
         body.forEach(function (b) {
-          var t = b.replace(/^•\s*/, '').trim();
+          var t = b.replace(BULLET_MARKER_RE, '').trim();
           if (!t) return;
           var m = t.match(STATUS_RE);
           if (m) entries.push({ heading: t.slice(0, m.index).trim(), right: m[0].trim(), line1: '', line2: '', bullets: [] });
@@ -191,12 +196,12 @@
           if (body[at].indexOf(' — ') === -1) return false;
           // Date range glued to the end of this heading line itself.
           if (DATE_RANGE_TAIL_RE.test(body[at])) return true;
-          if (at + 1 < body.length && DATE_RANGE_RE.test(body[at + 1].replace(/^•\s*/, ''))) return true;
+          if (at + 1 < body.length && DATE_RANGE_RE.test(body[at + 1].replace(BULLET_MARKER_RE, ''))) return true;
           if (at + 1 < body.length && /^Graduated:/i.test(body[at + 1])) return true;
           return false;
         }
         while (bi < body.length) {
-          var hd = splitHeadingDate(body[bi].replace(/^•\s*/, ''));
+          var hd = splitHeadingDate(body[bi].replace(BULLET_MARKER_RE, ''));
           var cur = { heading: hd.heading, right: '', line1: hd.date || '', line2: '', bullets: [] };
           ents.push(cur);
           bi++;
@@ -207,12 +212,12 @@
           if (bi < body.length && /^Graduated:/i.test(body[bi])) { cur.line1 = body[bi]; bi++; }
           // Only experience entries have a sub-line (unit / rotation line);
           // education goes straight to bullets after "Graduated: ...".
-          else if (secKind === 'experience' && bi < body.length && !/^•/.test(body[bi]) && !looksLikeNewEntry(bi)) { cur.line2 = body[bi]; bi++; }
+          else if (secKind === 'experience' && bi < body.length && !BULLET_MARKER_TEST.test(body[bi]) && !looksLikeNewEntry(bi)) { cur.line2 = body[bi].replace(BULLET_MARKER_RE, ''); bi++; }
           var sawMarker = false;
           while (bi < body.length) {
             var bl = body[bi];
-            if (!/^•/.test(bl) && looksLikeNewEntry(bi)) break;
-            if (/^•/.test(bl)) { sawMarker = true; cur.bullets.push(bl.replace(/^•\s*/, '')); bi++; }
+            if (looksLikeNewEntry(bi)) break;
+            if (BULLET_MARKER_TEST.test(bl)) { sawMarker = true; cur.bullets.push(bl.replace(BULLET_MARKER_RE, '')); bi++; }
             else if (sawMarker && cur.bullets.length) { cur.bullets[cur.bullets.length - 1] += ' ' + bl; bi++; }
             else { cur.bullets.push(bl); bi++; }
           }
@@ -225,9 +230,9 @@
         // lines (PDF) that do not start a new "Label:" continue the previous
         // bullet; if no line has a "Label:" shape, each line is its own bullet.
         var bullets = [];
-        var hasCat = body.some(function (b) { return /^[A-Z][A-Za-z &\/-]+:/.test(b.replace(/^•\s*/, '')); });
+        var hasCat = body.some(function (b) { return /^[A-Z][A-Za-z &\/-]+:/.test(b.replace(BULLET_MARKER_RE, '')); });
         body.forEach(function (b) {
-          var t = b.replace(/^•\s*/, '').trim();
+          var t = b.replace(BULLET_MARKER_RE, '').trim();
           if (!t) return;
           if (hasCat && !/^[A-Z][A-Za-z &\/-]+:/.test(t) && bullets.length) bullets[bullets.length - 1] += ' ' + t;
           else bullets.push(t);
@@ -236,7 +241,7 @@
       } else if (secKind === 'references') {
         var curRef = null;
         body.forEach(function (b) {
-          var t = b.replace(/^•\s*/, '').trim();
+          var t = b.replace(BULLET_MARKER_RE, '').trim();
           if (!t) return;
           if (/^Professional Relationship:/i.test(t)) return;
           var phm = t.match(/Phone:\s*([^•]+?)\s*(?:•\s*Email:\s*(.+))?$/i);
